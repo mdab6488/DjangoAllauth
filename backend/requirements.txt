@@ -1,0 +1,14 @@
+Django
+djangorestframework
+django-allauth
+django-cors-headers
+djangorestframework-simplejwt
+drf-yasg
+psycopg2-binary
+Pillow
+python-dotenv
+gunicorn
+# 
+whitenoise
+
+dj-rest-allauth

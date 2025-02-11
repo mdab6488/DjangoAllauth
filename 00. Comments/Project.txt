@@ -1,0 +1,47 @@
+mkdir DjangoAllauth && cd DjangoAllauth
+mkdir backend && cd backend
+python -m venv env
+source env/bin/activate   # On Windows use: env\Scripts\activate
+
+pip install django djangorestframework django-allauth django-cors-headers psycopg2-binary
+django-admin startproject config .
+django-admin startapp app
+
+pip install -r requirements.txt
+
+
+mkdir frontend && cd frontend
+npx create-next-app@latest . --ts
+
+=========================================================================================================
+npx create-next-app@latest . --ts
+√ Would you like to use ESLint? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to use Turbopack for `next dev`? ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
+Creating a new Next.js app in C:\00. MD AB\Python\DjangoAllauth\frontend.
+
+Using npm.
+
+Initializing project with template: app
+
+
+Installing dependencies:
+- react
+- react-dom
+- next
+
+Installing devDependencies:
+- typescript
+- @types/node
+- @types/react
+- @types/react-dom
+- eslint
+- eslint-config-next
+- @eslint/eslintrc
+=========================================================================================================
+
+
+npm install @emotion/react @emotion/styled @mui/material @mui/icons-material axios

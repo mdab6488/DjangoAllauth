@@ -1,0 +1,74 @@
+DjangoAllauth/
+├── backend/
+│   ├── AuthenticationApp/
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   ├── urls.py
+│   │   │   ├── views.py
+│   │   ├── migrations/
+│   │   │   ├── __init__.py
+│   │   ├── users/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py
+│   │   │   ├── serializers.py
+│   │   │   ├── signals.py
+│   │   │   ├── urls.py
+│   │   │   ├── views.py
+│   │   ├── __init__.py
+│   └── core/
+│   │   ├── __init__.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── wsgi.py
+│   └── env/
+│   ├── Dockerfile
+│   ├── entrypoint.sh
+│   ├── requirements.txt
+│   ├── manage.py                                           #Empty
+│
+├── frontend/
+│   ├── public/
+│   └── src/
+│   │   ├── app/
+│   │   │   ├── favicon.ico
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.module.css
+│   │   │   ├── page.tsx
+│   │   ├── components/
+│   │   │   ├── auth/
+│   │   │   │   ├── LoginForm.tsx  
+│   │   │   │   ├── SignupForm.tsx                  
+│   │   │   ├── Layout/
+│   │   │   │   ├── Footer.tsx                      
+│   │   │   │   ├── Header.tsx
+│   │   │   │   ├── index.tsx
+│   │   ├── hooks/
+│   │   │   │   ├── useApi.ts
+│   │   │   │   ├── useAuth.ts
+│   │   │   │   ├── useForm.ts
+│   │   │   │   ├── useLocalStorage.ts
+│   │   ├── pages/
+│   │   │   │   ├── _app.tsx
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── login.tsx
+│   │   │   │   ├── signup.tsx                      
+│   │   ├── services/
+│   │   │   │   ├── api.ts
+│   │   │   │   ├── auth.ts
+│   │   ├── styles/
+│   │   │   │   ├── globals.css
+│   │   │   │   ├── theme.ts
+│   │   ├── types/
+│   │   │   │   ├── index.ts
+│   ├── Dockerfile
+│   ├── eslint.config.mjs
+│   ├── next-env.d.ts                               #NOTE: This file should not be edited
+│   ├── next.config.js
+│   ├── next.config.ts                              
+│   ├── package.json
+│   ├── tsconfig.json
+├── docker-compose.yml
+└── .env

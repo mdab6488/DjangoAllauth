@@ -1,0 +1,77 @@
+x-env-config: &env-config
+  env_file:
+    - ${ENV_FILE:-.env}
+
+x-resource-limits: &resource-limits  # Add reusable resource limits
+  deploy:
+    resources:
+      limits:
+        cpus: '0.50'
+        memory: 512M
+services:
+  postgres:
+    image: postgres:13-alpine
+    container_name: DjangoAllauth_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - DjangoAllauth_network
+    <<: *resource-limits
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: DjangoAllauth_backend
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      CORS_ORIGIN_WHITELIST: ${CORS_ORIGIN_WHITELIST}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
+    depends_on:
+      - db
+    networks:
+      - DjangoAllauth_network
+    <<: *resource-limits
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      # NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      - NODE_ENV=development
+    networks:
+      - DjangoAllauth_network
+    depends_on:
+      - backend
+
+networks:
+  DjangoAllauth_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
