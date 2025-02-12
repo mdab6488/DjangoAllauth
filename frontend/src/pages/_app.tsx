@@ -22,7 +22,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AppProps } from 'next/app';
 import createEmotionCache from '@/utils/createEmotionCache';
-import theme from '@/styles/theme';
+import { theme } from '@/styles/theme';
 import { useEffect } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
@@ -31,8 +31,7 @@ const clientSideEmotionCache = createEmotionCache();
 
 interface MyAppProps extends AppProps {
   emotionCache?: EmotionCache;
-  Component: React.ElementType;
-  pageProps: any; // or specify the exact type if known
+  pageProps: Record<string, unknown>; // or specify the exact type if known
 }
 
 export default function MyApp(props: MyAppProps) {

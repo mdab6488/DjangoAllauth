@@ -131,7 +131,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'users.User'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
@@ -141,6 +141,14 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
 ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300
+
+# Optional: Define timezone choices
+TIMEZONE_CHOICES = [
+    ('UTC', 'UTC'),
+    ('US/Pacific', 'US/Pacific'),
+    ('US/Eastern', 'US/Eastern'),
+    # Add more as needed
+]
 
 LOGIN_REDIRECT_URL='/'
 

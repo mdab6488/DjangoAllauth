@@ -3,16 +3,16 @@ import api from '../services/api';
 
 interface UseApiOptions<T> {
   onSuccess?: (data: T) => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 export const useApi = <T>(options: UseApiOptions<T> = {}) => {
   const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
 
   const execute = useCallback(
-    async (url: string, method = 'GET', body?: any) => {
+    async (url: string, method = 'GET', body?: Record<string, unknown>) => {
       setLoading(true);
       setError(null);
 

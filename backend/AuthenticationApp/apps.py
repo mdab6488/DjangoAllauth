@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 class UsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'AuthenticationApp.users'
+    name = 'AuthenticationApp'
     
     def ready(self):
-        import AuthenticationApp.users.signals
+        import backend.AuthenticationApp.signals  # noqa: F401

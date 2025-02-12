@@ -26,7 +26,7 @@ const LoginForm = () => {
       const response = await login(data.email, data.password);
       localStorage.setItem('token', response.access);
       router.push('/');
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
     }
   };

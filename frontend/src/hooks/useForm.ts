@@ -6,7 +6,7 @@ interface UseFormProps<T> {
   validate?: (values: T) => Partial<Record<keyof T, string>>;
 }
 
-export const useForm = <T extends Record<string, any>>({
+export const useForm = <T extends Record<string, unknown>>({
   initialValues,
   onSubmit,
   validate,

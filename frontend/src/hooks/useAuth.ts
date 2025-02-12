@@ -18,6 +18,7 @@ export const useAuth = () => {
         const userData = await getUserProfile();
         setUser(userData);
       } catch (err) {
+        console.error(err);
         setError('Authentication failed');
         localStorage.removeItem('token');
       } finally {

@@ -32,8 +32,13 @@ const SignupForm = () => {
       const response = await registerUser(data.email, data.password1, data.password2);
       localStorage.setItem('token', response.access);
       router.push('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed');
+    } catch (err: unknown) {
+      if (err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message) {
+        const errorMessage = (err as unknown as { response: { data: { message: string } } }).response.data.message;
+        setError(errorMessage);
+      } else {
+        setError('Registration failed');
+      }
     }
   };
 

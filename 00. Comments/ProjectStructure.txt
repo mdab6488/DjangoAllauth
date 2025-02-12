@@ -1,34 +1,35 @@
 DjangoAllauth/
 ├── backend/
 │   ├── AuthenticationApp/
-│   │   ├── api/
-│   │   │   ├── __init__.py
-│   │   │   ├── urls.py
-│   │   │   ├── views.py
 │   │   ├── migrations/
 │   │   │   ├── __init__.py
-│   │   ├── users/
-│   │   │   ├── __init__.py
-│   │   │   ├── admin.py
-│   │   │   ├── apps.py
-│   │   │   ├── models.py
-│   │   │   ├── serializers.py
-│   │   │   ├── signals.py
-│   │   │   ├── urls.py
-│   │   │   ├── views.py
 │   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── permissions.py
+│   │   ├── serializers.py
+│   │   ├── signals.py
+│   │   ├── throttling.py
+│   │   ├── urls.py
+│   │   ├── views.py
 │   └── core/
 │   │   ├── __init__.py
+│   │   ├── asgi.py
 │   │   ├── settings.py
 │   │   ├── urls.py
 │   │   ├── wsgi.py
 │   └── env/
+│   └── media/
+│   └── staticfiles/
+│   ├── .dockerignore
 │   ├── Dockerfile
 │   ├── entrypoint.sh
 │   ├── requirements.txt
 │   ├── manage.py                                           #Empty
 │
 ├── frontend/
+│   ├── node_modules
 │   ├── public/
 │   └── src/
 │   │   ├── app/
@@ -63,12 +64,22 @@ DjangoAllauth/
 │   │   │   │   ├── theme.ts
 │   │   ├── types/
 │   │   │   │   ├── index.ts
+│   │   ├── utils/
+│   │   │   │   ├── createEmotionCache.ts
+│   ├── .dockerignore
+│   ├── .gitignore
 │   ├── Dockerfile
 │   ├── eslint.config.mjs
 │   ├── next-env.d.ts                               #NOTE: This file should not be edited
 │   ├── next.config.js
 │   ├── next.config.ts                              
+│   ├── package-lock.json                             
 │   ├── package.json
 │   ├── tsconfig.json
+├── nginx/
+│   ├── default.conf
 ├── docker-compose.yml
 └── .env
+└── .gitignore
+└── docker-compose.yml
+└── README.md
