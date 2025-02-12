@@ -1,5 +1,7 @@
+'use client'; // At the top of your file if this is a Client Component
+
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 const Header = () => {
