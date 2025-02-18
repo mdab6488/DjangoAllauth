@@ -1,12 +1,19 @@
 import { createTheme } from '@mui/material/styles';
 
-export const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
+// Define your custom theme creation logic
+export const createAppTheme = () => {
+  return createTheme({
+    palette: {
+      primary: {
+        main: '#1976d2',
+      },
+      // Other palette configurations...
     },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+  });
+};
+
+// Define and export your `useTheme` hook
+export const useTheme = () => {
+  // Here you can call createAppTheme or implement custom logic
+  return createAppTheme(); // return the theme object
+};

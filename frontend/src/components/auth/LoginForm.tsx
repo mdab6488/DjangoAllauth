@@ -1,3 +1,7 @@
+// frontend/src/components/auth/LoginForm.tsx
+"use client";
+import React from 'react';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -97,3 +101,4 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+

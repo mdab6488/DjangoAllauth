@@ -1,3 +1,7 @@
+// frontend/src/components/auth/SignupForm.tsx
+"use client";
+import React from 'react';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';

@@ -1,30 +1,18 @@
-import type { Metadata } from "next";
-import { Inter, Roboto_Mono } from "next/font/google";
-import { CacheProvider } from '@emotion/react';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import createEmotionCache from '@/utils/createEmotionCache';
-import { theme } from '@/styles/theme';
-import Layout from '@/components/Layout';
-import "../styles/globals.css";
-
-// Initialize fonts
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
-  subsets: ["latin"],
-});
-
-// Create emotion cache
-const clientSideEmotionCache = createEmotionCache();
+import type { Metadata, Viewport } from "next";
+import ServerLayout from './ServerLayout';
 
 export const metadata: Metadata = {
-  title: "Your App Name",
-  description: "Your app description",
+  title: 'My Page',
+  description: 'Description of my page',
+  icons: {
+    icon: '/favicon.ico', // Add your favicon
+  }
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -34,15 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${robotoMono.variable}`}>
-        <CacheProvider value={clientSideEmotionCache}>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Layout>
-              {children}
-            </Layout>
-          </ThemeProvider>
-        </CacheProvider>
+      <body>
+        <ServerLayout>
+          {children}
+        </ServerLayout>
       </body>
     </html>
   );

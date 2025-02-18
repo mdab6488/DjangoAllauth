@@ -1,87 +1,95 @@
 DjangoAllauth/
-├── backend/
-│   ├── AuthenticationApp/
-│   │   ├── migrations/
+├── backend/                           # Django Backend
+│   ├── AuthenticationApp/             # Custom Django app for authentication
+│   │   ├── migrations/                # Database migration files
 │   │   │   ├── __init__.py
 │   │   ├── __init__.py
-│   │   ├── admin.py
-│   │   ├── apps.py
-│   │   ├── models.py
-│   │   ├── permissions.py
-│   │   ├── serializers.py
-│   │   ├── signals.py
-│   │   ├── throttling.py
-│   │   ├── urls.py
-│   │   ├── views.py
-│   └── core/
+│   │   ├── admin.py                   # Admin panel configurations
+│   │   ├── apps.py                    # App configuration
+│   │   ├── models.py                  # Database models
+│   │   ├── permissions.py             # Custom permissions
+│   │   ├── serializers.py             # Serializers for API responses
+│   │   ├── signals.py                 # Signal handlers
+│   │   ├── throttling.py              # Rate limiting/throttling logic
+│   │   ├── urls.py                    # URL routing for the app
+│   │   ├── views.py                   # API views
+│   ├── config/                        # Project-wide configurations
 │   │   ├── __init__.py
-│   │   ├── asgi.py
-│   │   ├── settings.py
-│   │   ├── urls.py
-│   │   ├── wsgi.py
-│   └── env/
-│   └── media/
-│   └── staticfiles/
-│   ├── .dockerignore
-│   ├── Dockerfile
-│   ├── entrypoint.sh
-│   ├── requirements.txt
-│   ├── manage.py                                           
+│   │   ├── asgi.py                    # ASGI configuration
+│   │   ├── settings.py                # Django settings
+│   │   ├── urls.py                    # Root URL configuration
+│   │   ├── wsgi.py                    # WSGI configuration
+│   ├── env/                           # Environment-specific files
+│   ├── media/                         # User-uploaded media files
+│   ├── staticfiles/                   # Static files for production
+│   ├── .dockerignore                  # Files to ignore in Docker builds
+│   ├── Dockerfile                     # Dockerfile for the backend
+│   ├── entrypoint.sh                  # Entrypoint script for Docker
+│   ├── manage.py                      # Django management script
+│   ├── requirements.txt               # Python dependencies
 │
-├── frontend/
-│   ├── node_modules
-│   ├── public/
-│   └── src/
-│   │   ├── app/
-│   │   │   ├── api/
-│   │   │   │   ├── route.ts 
-│   │   │   ├── login/
-│   │   │   │   ├── page.tsx 
-│   │   │   ├── signup/
-│   │   │   │   ├── page.tsx 
-│   │   │   ├── favicon.ico
-│   │   │   ├── layout.tsx
-│   │   │   ├── page.tsx
-│   │   ├── components/
-│   │   │   ├── auth/
-│   │   │   │   ├── LoginForm.tsx  
-│   │   │   │   ├── SignupForm.tsx                  
-│   │   │   ├── Layout/
-│   │   │   │   ├── Footer.tsx                      
-│   │   │   │   ├── Header.tsx
-│   │   │   │   ├── index.tsx               
-│   │   │   ├── ui/
-│   │   │   │   ├──   
-│   │   ├── hooks/
-│   │   │   │   ├── useApi.ts
-│   │   │   │   ├── useAuth.ts
-│   │   │   │   ├── useForm.ts
-│   │   │   │   ├── useLocalStorage.ts                     
-│   │   ├── services/
-│   │   │   │   ├── api.ts
-│   │   │   │   ├── auth.ts
-│   │   ├── styles/
-│   │   │   │   ├── globals.css
-│   │   │   │   ├── page.module.css
-│   │   │   │   ├── theme.ts
-│   │   ├── types/
-│   │   │   │   ├── index.ts
-│   │   ├── utils/
-│   │   │   │   ├── createEmotionCache.ts
-│   ├── .dockerignore
-│   ├── .gitignore
-│   ├── Dockerfile
-│   ├── eslint.config.mjs
-│   ├── next-env.d.ts                               #NOTE: This file should not be edited
-│   ├── next.config.js
-│   ├── next.config.ts                              
-│   ├── package-lock.json                             
-│   ├── package.json
-│   ├── tsconfig.json
-├── nginx/
-│   ├── default.conf
-├── docker-compose.yml
-└── .env
-└── .gitignore
-└── docker-compose.yml
-└── README.md
+├── frontend/                          # Next.js Frontend wiht typescript
+│   ├── .next/                         # Next.js build output (auto-generated)
+│   ├── node_modules/                  # Node.js dependencies
+│   ├── public/                        # Public assets (e.g., favicon, images)
+│   ├── src/                           # Source code for the frontend
+│   │   ├── app/                       # Next.js app directory
+│   │   │   ├── api/                   # API route handlers
+│   │   │   │   ├── [...path]/        # Dynamic API route
+│   │   │   │   │   ├── route.ts      # Proxy handler for Django API
+│   │   │   ├── login/                # Login page
+│   │   │   │   ├── page.tsx          # Login UI component
+│   │   │   ├── signup/               # Signup page
+│   │   │   │   ├── page.tsx          # Signup UI component
+│   │   │   ├── ClientLayout.tsx      # Client-side layout
+│   │   │   ├── favicon.ico           # Favicon
+│   │   │   ├── layout.tsx            # Root layout
+│   │   │   ├── page.tsx              # Default page
+│   │   │   ├── ServerLayout.tsx      # Server-side layout
+│   │   ├── components/               # Reusable components
+│   │   │   ├── auth/                 # Authentication-related components
+│   │   │   │   ├── LoginForm.tsx     # Login form
+│   │   │   │   ├── SignupForm.tsx    # Signup form
+│   │   │   ├── Layout/               # Layout components
+│   │   │   │   ├── Footer.tsx        # Footer component
+│   │   │   │   ├── Header.tsx        # Header component
+│   │   │   │   ├── index.tsx         # Export layout components
+│   │   │   ├── ui/                   # UI utility components
+│   │   │   │   ├── ErrorFallback.tsx
+│   │   │   │   ├── Loading.tsx
+│   │   │   │   ├── ThemeProvider.tsx # Theme provider for styling
+│   │   ├── hooks/                    # Custom React hooks
+│   │   │   ├── useApi.ts             # API hook for making requests
+│   │   │   ├── useAuth.ts            # Authentication hook
+│   │   │   ├── useForm.ts            # Form handling hook
+│   │   │   ├── useLocalStorage.ts    # Local storage hook
+│   │   ├── services/                 # Service layer for API calls
+│   │   │   ├── api.ts                # API client configuration
+│   │   │   ├── auth.ts               # Authentication-related services
+│   │   ├── styles/                   # Global styles and themes
+│   │   │   ├── globals.css           # Global CSS styles
+│   │   │   ├── page.module.css       # Modular CSS for pages
+│   │   │   ├── theme.ts              # Theme definitions
+│   │   ├── types/                    # TypeScript type definitions
+│   │   │   ├── index.ts              # Centralized type exports
+│   │   ├── utils/                    # Utility functions
+│   │   │   ├── createEmotionCache.ts # Emotion cache for SSR
+│   ├── .dockerignore                 # Files to ignore in Docker builds
+│   ├── .gitignore                    # Files to ignore in Git
+│   ├── Dockerfile                    # Dockerfile for the frontend
+│   ├── eslint.config.mjs             # ESLint configuration
+│   ├── next-env.d.ts                 # Next.js environment types (do not edit)
+│   ├── next.config.js                # Next.js configuration
+│   ├── package.json                  # Node.js dependencies and scripts
+│   ├── tsconfig.json                 # TypeScript configuration
+│   ├── yarn.lock                     # 
+│
+├── nginx/                            # Nginx configuration
+│   ├── conf.d/                       # Nginx server block configurations
+│   │   ├── default.conf              # Default server configuration
+│
+├── .env                              # Environment variables
+├── .gitignore                        # Files to ignore in Git
+├── docker-compose.yml                # Docker Compose configuration
+├── README.md                         # Project documentation
+├── wait-for-it.sh                    # 

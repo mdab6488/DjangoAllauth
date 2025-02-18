@@ -1,3 +1,18 @@
 {
-    "DockerRun.DisableDockerrc": true
+    "DockerRun.DisableDockerrc": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "*_test.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "DockerRun.Containers": [
+        "9632921a5724",
+        "8026c6e080be",
+        "b3bf7d8b3bdd",
+        "10c0e10bc835"
+    ]
 }

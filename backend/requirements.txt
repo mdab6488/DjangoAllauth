@@ -52,5 +52,5 @@ gunicorn
 config
 # ============================------============================================
 django-cors-headers
-
+dj-database-url
 

@@ -1,0 +1,5 @@
+yarn install
+yarn run build
+yarn start
+yarn install --network-timeout 100000 --network-concurrency 1
+yarn cache clean
