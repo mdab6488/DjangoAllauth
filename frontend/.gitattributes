@@ -1,0 +1,7 @@
+# Mark Yarn files as vendored or binary
+/.yarn/**            linguist-vendored
+/.yarn/releases/*    binary
+/.yarn/plugins/**/*  binary
+
+# Mark PnP files as binary and generated
+/.pnp.*              binary linguist-generated

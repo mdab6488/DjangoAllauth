@@ -1,0 +1,150 @@
+# Reusable configuration fragments
+x-env-config: &env-config
+  env_file:
+    - ${ENV_FILE:-.env}
+
+x-resource-limits: &resource-limits
+  deploy:
+    resources:
+      limits:
+        cpus: '0.50'
+        memory: 512M
+
+x-logging: &logging-config
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: DjangoAllauth_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+      - ./postgres/initdb.d:/docker-entrypoint-initdb.d:ro  # For running init scripts on startup
+    networks:
+      - DjangoAllauth_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    <<: [*resource-limits, *logging-config]
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        - ENVIRONMENT=${ENVIRONMENT:-production}
+    container_name: DjangoAllauth_backend
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - CORS_ORIGIN_WHITELIST=${CORS_ORIGIN_WHITELIST}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings.${ENVIRONMENT}}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - DjangoAllauth_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    command: >
+      sh -c "/usr/local/bin/wait-for-it.sh postgres:5432 -- gunicorn --bind 0.0.0.0:8000 config.wsgi:application"
+    <<: [*resource-limits, *logging-config, *env-config]
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
+    container_name: DjangoAllauth_frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+    networks:
+      - DjangoAllauth_network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3000"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      backend:
+        condition: service_healthy
+    <<: [*resource-limits, *logging-config, *env-config]
+
+  nginx:
+    image: nginx:1.27.4-alpine
+    container_name: DjangoAllauth_nginx
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    networks:
+      - DjangoAllauth_network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/healthcheck"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    <<: [*resource-limits, *logging-config]
+
+networks:
+  DjangoAllauth_network:
+    driver: bridge
+    name: DjangoAllauth_network
+
+volumes:
+  postgres_data:
+    name: DjangoAllauth_postgres_data
+  static_volume:
+    name: DjangoAllauth_static_volume
+  media_volume:
+    name: DjangoAllauth_media_volume

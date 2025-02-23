@@ -1,0 +1,9 @@
+git init
+git branch -M main
+git remote add origin https://github.com/mdab6488/DjangoAllauth.git
+git config http.postBuffer 524288000
+git remote -v
+git add .
+git branch
+git commit -m "23-02-2025"
+git push --force origin main

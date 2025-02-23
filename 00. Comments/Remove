@@ -1,0 +1,19 @@
+    "@testing-library/dom": "10.4.0",
+    "@types/babel__core": "7.20.5",
+    "@types/jest": "29.5.14",
+    "@typescript-eslint/typescript-estree": "8.24.1",
+    "@typescript-eslint/utils": "8.24.1",
+    "webpack": "5.98.0",
+
+  ...compat.extends(
+    "next/typescript",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:@typescript-eslint/recommended"
+  ),
+
+    
+  "eslint-config-next@*":
+    peerDependencies:
+      react: "^18.2.0"
+      react-dom: "^18.2.0"

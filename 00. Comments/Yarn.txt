@@ -1,0 +1,54 @@
+yarn init 
+(Only add yarn init if package.json is missing.)
+
+===========================
+Core Yarn Commands
+===========================
+yarn add next
+yarn add -D @types/next
+yarn up
+yarn up next
+yarn remove @types/node
+
+===========================
+Running Scripts
+===========================
+yarn run build
+This command triggers the build process for your project. In a Next.js app, it runs next build, which compiles and optimizes your application for production. It generates an optimized set of static files and server-side code in the .next directory. This step is typically done before deploying your app to a production environment. It ensures your app is minified, bundled, and ready for peak performance. You’d use this when you’re preparing to ship your app.
+
+yarn next dev
+This runs next dev, which starts your Next.js app in development mode. It launches a local development server (usually on localhost:3000) with features like hot reloading, so changes you make to your code are reflected instantly without needing to restart the server. It’s unoptimized and includes debugging tools, making it ideal for writing and testing code during development. Use this when you’re actively building or tweaking your app.
+
+yarn start
+This runs next start, which starts your Next.js app in production mode using the output from yarn run build. It assumes the .next directory already exists (from a prior build) and serves your app as a performant, production-ready server. No hot reloading or dev tools here—it’s all about efficiency and stability. You’d use this after building your app, typically on a server or locally to test the production version.
+
+===========================
+Dependency Management and Debugging
+===========================
+yarn why typescript
+yarn explain peer-requirements p93e51
+yarn explain peer-requirements p97b57
+yarn cache clean
+rm -rf .yarn/cache
+rm -rf .yarn/install-state.gz
+rm -rf yarn.lock
+rm -rf node_modules
+
+yarn install
+yarn install --immutable
+yarn install --immutable-cache
+yarn install --refresh-lockfile
+yarn install --network-timeout 100000
+yarn install --immutable --network-timeout 100000
+
+===========================
+Version and Info Commands
+===========================
+yarn --version
+yarn info next
+
+yarn config
+yarn info @types/next
+
+yarn type-check
+yarn test

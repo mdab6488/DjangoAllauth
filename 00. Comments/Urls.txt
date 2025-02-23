@@ -1,0 +1,52 @@
+=================================================
+1. API Documentation (if you've set up drf-yasg or similar):
+=================================================
+http://localhost/api/docs/          # Swagger UI
+http://localhost/api/redoc/         # ReDoc UI
+
+=================================================
+2. Admin Interface:
+=================================================
+http://localhost/admin/
+
+=================================================
+3. Authentication & Token URLs (under api/v1/):
+=================================================
+http://localhost/api/
+http://localhost/api/v1/register/
+http://localhost/api/v1/profile/
+http://localhost/api/v1/profile/update/
+http://localhost/api/v1/token/
+http://localhost/api/v1/token/refresh/
+http://localhost/api/v1/password/change/
+
+=================================================
+4. Profile and Settings URLs (under api/):
+=================================================
+http://localhost/api/profile/
+http://localhost/api/profile/update/
+http://localhost/api/profile/password/
+http://localhost/api/profile/delete/
+http://localhost/api/profile/activity/
+http://localhost/api/profile/settings/
+
+=================================================
+5. Email Verification URLs:
+=================================================
+http://localhost/api/email/verify/<token>/
+http://localhost/api/email/resend/
+
+
+
+=================================================
+-------------------------------------------------
+=================================================
+http://localhost/login
+http://localhost/signup
+http://localhost/api/auth/login/
+http://localhost/api/auth/register/
+http://localhost/api/auth/logout/
+http://localhost/api/auth/password/reset/
+http://localhost/api/auth/password/reset/confirm/
+
+

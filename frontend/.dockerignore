@@ -1,0 +1,49 @@
+# .dockerignore
+
+# Node/npm/yarn artifacts
+**/node_modules
+.yarn/cache  # Only if you're not using offline cache
+.yarn/install-state.gz
+.pnp.*
+
+# Build outputs
+.next
+dist
+out
+
+# Environment files
+.env*.local
+.env
+.env.production
+.env.development
+
+# Logs and debug
+*.log
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Version control
+.git
+.gitignore
+.gitmodules
+
+# Tests and coverage
+coverage
+.nyc_output
+
+# IDE/Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# Misc
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Keep these lines at the BOTTOM of .dockerignore
+!.yarn/cache
+!.yarnrc.yml

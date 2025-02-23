@@ -1,0 +1,1 @@
+swcMinify: false, // If you're still getting the SWC error after these changes, try adding this to your next.config.js

@@ -1,0 +1,56 @@
+# ============================Core Django & REST Framework Packages============================================
+# A high-level Python web framework that promotes rapid development and clean, pragmatic design.
+# Provides ORM, authentication, and a powerful admin panel.
+# Used for building full-stack web applications.
+Django
+# A powerful and flexible toolkit for building Web APIs with Django.
+# Provides serialization, authentication, pagination, and view sets.
+# Used to develop RESTful APIs in Django applications.
+djangorestframework
+# ============================Authentication & Authorization============================================
+# Handles authentication, registration, and social login (OAuth, Google, Facebook, etc.).
+# Used when implementing user login and signup, including third-party authentication.
+django-allauth
+# Provides JSON Web Token (JWT) authentication for Django REST Framework.
+# Used for stateless authentication in APIs (secure token-based authentication).
+djangorestframework-simplejwt
+
+# Provides login, logout, password reset, social authentication, and JWT authentication for DRF.
+# Works with django-allauth and djangorestframework-simplejwt to manage authentication flows.
+dj-rest-auth
+# ============================API & Documentation Tools============================================
+# A fast, high-performance Django API framework based on Python type hints.
+# Used for building APIs with automatic OpenAPI documentation (similar to FastAPI).
+django-ninja
+# Generates OpenAPI 3.0 schema documentation for Django REST Framework APIs.
+# Used for generating Swagger and ReDoc API documentation.
+drf-spectacular
+# Generates OpenAPI 2.0 and 3.0 documentation for Django REST Framework APIs.
+# Similar to drf-spectacular, but older and less feature-rich.
+drf-yasg
+
+# ============================Database & Environment Configuration============================================
+# PostgreSQL database adapter for Python and Django.
+# Used for connecting Django applications to PostgreSQL.
+psycopg2-binary
+# Loads environment variables from a .env file into Python.
+# Used for keeping sensitive data like database credentials outside the codebase.
+python-dotenv
+# ============================Static Files, Images, and Performance============================================
+# A Python Imaging Library (PIL) fork used for handling image uploads and processing.
+# Used when working with user-uploaded images in Django models.
+Pillow
+# Serves static files in production without needing a separate CDN or Nginx.
+# Commonly used in Django projects deployed on Heroku.
+whitenoise
+
+# ============================Production Deployment============================================
+# A WSGI server used to run Django applications in production.
+# Commonly used with reverse proxies like Nginx for handling web traffic.
+gunicorn
+
+config
+# ============================------============================================
+django-cors-headers
+dj-database-url
+

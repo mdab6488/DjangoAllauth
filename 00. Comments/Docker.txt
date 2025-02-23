@@ -1,0 +1,47 @@
+docker-compose up --build -d
+
+1️⃣ Quick Restart (Without Rebuilding Everything)
+If your changes are mostly configurations, environment variables, or minor updates, run:
+
+docker-compose up -d
+This will restart only the affected services without rebuilding all images.
+
+2️⃣ Partial Rebuild (Only for Updated Services)
+If you made code changes in the backend or frontend, but not in dependencies (like requirements.txt or package.json), then:
+
+docker-compose up -d --no-deps --build frontend
+docker-compose up -d --no-deps --build backend
+This will only rebuild the backend and frontend without touching PostgreSQL or other services.
+
+3️⃣ Full Rebuild (If You Changed Dependencies or Installed New Packages)
+If you updated:
+
+requirements.txt (for Python dependencies)
+package.json (for frontend dependencies)
+Then, you need a full rebuild:
+
+docker-compose up -d --build
+This will rebuild everything but keep your volumes and database intact.
+
+4️⃣ Stop and Restart Everything Cleanly (If Needed)
+If something is still not working, do:
+
+docker-compose down
+docker-compose up -d --build
+This will: ✅ Stop and remove all containers
+✅ Rebuild everything
+✅ Restart your services
+
+Bonus: Check Logs
+After running the commands, check if everything is running smoothly:
+
+docker-compose logs -f
+It will show you real-time logs from all services.
+
+docker build --no-cache -t frontend .
+
+DOCKER_BUILDKIT=1 docker-compose up -d --no-deps --build frontend
+If you have Git Bash, WSL (Windows Subsystem for Linux), or another Unix-like shell installed, you can run the original command as-is:
+
+$Env:DOCKER_BUILDKIT = "1"; docker-compose up -d --no-deps --build frontend
+For PowerShell, I recommend Option 1 as it’s clean and aligns with PowerShell conventions:
