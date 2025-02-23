@@ -45,10 +45,10 @@ yarn install --immutable --network-timeout 100000
 Version and Info Commands
 ===========================
 yarn --version
-yarn info next
+yarn info @types/next
 
 yarn config
-yarn info @types/next
 
 yarn type-check
 yarn test
+yarn jest

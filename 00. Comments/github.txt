@@ -5,5 +5,5 @@ git config http.postBuffer 524288000
 git remote -v
 git add .
 git branch
-git commit -m "23-02-2025"
+git commit -m "yarn install with 1 error, yarn type-check, yarn test, yarn jest, yarn next dev"
 git push --force origin main
