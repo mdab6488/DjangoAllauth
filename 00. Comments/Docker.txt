@@ -16,6 +16,8 @@ This will only rebuild the backend and frontend without touching PostgreSQL or o
 docker-compose build --no-cache frontend
 docker-compose up -d --no-deps frontend
 
+docker-compose build --no-cache backend
+docker-compose up -d --no-deps backend
 
 3️⃣ Full Rebuild (If You Changed Dependencies or Installed New Packages)
 If you updated:
