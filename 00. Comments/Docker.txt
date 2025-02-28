@@ -1,4 +1,4 @@
-docker-compose up --build --no-cache -d
+docker-compose up --build -d
 
 1️⃣ Quick Restart (Without Rebuilding Everything)
 If your changes are mostly configurations, environment variables, or minor updates, run:
@@ -18,6 +18,15 @@ docker-compose up -d --no-deps frontend
 
 docker-compose build --no-cache backend
 docker-compose up -d --no-deps backend
+
+docker-compose build --no-cache postgres
+docker-compose up -d --no-deps postgres
+docker exec -it DjangoAllauth_postgres pg_ctl stop -m fast
+
+docker-compose exec postgres psql -U $auth_user -d $auth_password -c "SELECT pg_database.datname FROM pg_database;"
+
+docker-compose build --no-cache nginx
+docker-compose up -d --no-deps nginx
 
 3️⃣ Full Rebuild (If You Changed Dependencies or Installed New Packages)
 If you updated:

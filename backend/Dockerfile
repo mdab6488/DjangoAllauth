@@ -84,6 +84,10 @@ COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appgroup . .
 COPY --from=builder --chown=appuser:appgroup /app/static /app/static
 
+# Copy wait-for-it.sh script and make it executable
+COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
+RUN chmod +x /usr/local/bin/wait-for-it.sh
+
 # Make entrypoint script executable 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x entrypoint.sh

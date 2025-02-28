@@ -61,8 +61,8 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
-WSGI_APPLICATION = 'config.wsgi.application'
+ROOT_URLCONF = 'core.urls'
+WSGI_APPLICATION = 'core.wsgi.application'
 
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True
@@ -203,9 +203,10 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'backend', 'static'),
-]
+
+# Only add this if you have a global static/ folder
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -229,7 +230,14 @@ WHITENOISE_MAX_AGE = 31536000  # 1 year
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# settings.py
+# LOGGING
+
+LOG_DIR = os.getenv("LOG_DIR", "/app/logs")
+
+# Create the logs directory if it doesn't exist
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -237,13 +245,17 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/var/log/app.log',
-            'maxBytes': 1024*1024*5,  # 5MB
+            'filename': os.path.join(LOG_DIR, "app.log"),
+            'maxBytes': 1024 * 1024 * 5,  # 5MB
             'backupCount': 5,
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
         },
     },
     'root': {
-        'handlers': ['file'],
+        'handlers': ['file', 'console'],
         'level': 'INFO',
-    }
+    },
 }

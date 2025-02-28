@@ -5,5 +5,5 @@ git config http.postBuffer 524288000
 git remote -v
 git add .
 git branch
-git commit -m "DjangoAllauth_frontend Ready in 507ms"
+git commit -m "DjangoAllauth_postgres & DjangoAllauth_backend is working"
 git push --force origin main

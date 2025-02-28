@@ -21,7 +21,9 @@ x-logging: &logging-config
 
 services:
   postgres:
-    image: postgres:17-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     container_name: DjangoAllauth_postgres
     restart: unless-stopped
     environment:
@@ -54,8 +56,9 @@ services:
     restart: unless-stopped
     volumes:
       - ${DEVELOPMENT_MODE:+./backend:/app}
-      - static_volume:/app/static
+      - static_volume:/app/collected_static
       - media_volume:/app/media
+      - ./logs_volume:/app/logs  # Persist logs
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     environment:
@@ -69,6 +72,7 @@ services:
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
       - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-core.settings}
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}
+      - LOG_DIR=/app/logs  # Set log directory
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,11 +85,11 @@ services:
       retries: 3
       start_period: 15s
     command: >
-      sh -c "/usr/local/bin/wait-for-it.sh postgres:5432 -- 
-             python manage.py migrate --noinput &&
-             python manage.py create_superuser &&
-             python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-3} --threads ${GUNICORN_THREADS:-2} config.wsgi:application"
+      sh -c "mkdir -p /app/logs && 
+            /usr/local/bin/wait-for-it.sh postgres 5432 'PostgreSQL is ready' echo &&
+            python manage.py migrate --noinput &&
+            python manage.py collectstatic --noinput &&
+            gunicorn --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-3} --threads ${GUNICORN_THREADS:-2} core.wsgi:application"
     <<: [*resource-limits, *logging-config, *env-config]
 
   frontend:
@@ -162,3 +166,5 @@ volumes:
     name: DjangoAllauth_static_volume
   media_volume:
     name: DjangoAllauth_media_volume
+  logs_volume:
+    name: DjangoAllauth_log_volume

@@ -1,6 +1,6 @@
-docker-compose.yml      : 
-DjangoAllauth_frontend  : OK
-postgres                : 
-backend                 : 
-frontend                : 
-nginx                   : 
+docker-compose.yml                      : 
+DjangoAllauth_frontend                  : 
+DjangoAllauth_postgres                  : OK
+DjangoAllauth_backend                   : OK
+frontend                                : 
+nginx                                   : 
