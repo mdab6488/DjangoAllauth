@@ -98,12 +98,14 @@ class User(AbstractUser):
     # Preferences
     email_notifications = models.BooleanField(_('email notifications'), default=True)
     push_notifications = models.BooleanField(_('push notifications'), default=True)
+    
+    # Fixed timezone field - error was in the choices format
     timezone = models.CharField(
         max_length=50,
         default=settings.TIME_ZONE,
-        choices=[(tz, tz) for tz in settings.TIMEZONE_CHOICES]
-        if hasattr(settings, 'TIMEZONE_CHOICES') else None
+        choices=[(tz, tz) for tz in getattr(settings, 'TIMEZONE_CHOICES', [settings.TIME_ZONE])]
     )
+    
     language = models.CharField(
         max_length=10,
         default=settings.LANGUAGE_CODE,

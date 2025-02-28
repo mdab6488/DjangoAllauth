@@ -1,0 +1,3 @@
+#!/bin/bash
+# Only collect essential static files
+python manage.py collectstatic --noinput -i admin -i rest_framework -i drf-yasg

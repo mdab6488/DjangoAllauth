@@ -1,0 +1,6 @@
+docker-compose.yml      : 
+DjangoAllauth_frontend  : OK
+postgres                : 
+backend                 : 
+frontend                : 
+nginx                   : 

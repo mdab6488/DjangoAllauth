@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     // Language and Environment
-    "target": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "target": "esnext",
+    "lib": ["DOM", "DOM.Iterable", "esnext"],
     "jsx": "preserve",
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
 
     // Modules
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "preserveSymlinks": true,
     "baseUrl": ".",
     "paths": {

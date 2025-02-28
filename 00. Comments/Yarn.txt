@@ -52,3 +52,5 @@ yarn config
 yarn type-check
 yarn test
 yarn jest
+
+yarn dlx @yarnpkg/sdks vscode

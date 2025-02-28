@@ -1,0 +1,51 @@
+# Ignore development and configuration files
+
+.vscode/
+.env
+.git/
+.gitignore
+.dockerignore
+
+## Development files
+
+/dev/
+/tests/
+/notebooks/
+/docs/
+
+## Ignore frontend build artifacts
+
+frontend/.next/
+frontend/public/
+frontend/node_modules/
+
+## Ignore backend static files and media
+
+backend/media/
+backend/static/
+
+## Ignore logs and caches
+
+*.log
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+## Ignore dependency files
+
+backend/requirements.txt
+frontend/package-lock.json
+
+## Node modules
+
+node_modules/
+
+## Local media
+
+media/
+!media/production/
+
+## Virtual environments
+
+venv/
+env/

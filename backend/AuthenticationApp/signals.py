@@ -6,9 +6,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 import jwt
 from datetime import datetime, timedelta
-from .models import CustomUser  # Use relative import
+from .models import User  # Use relative import
 
-@receiver(post_save, sender=CustomUser)
+@receiver(post_save, sender=User)
 def send_verification_email(sender, instance, created, **kwargs):
     if created and not instance.is_superuser:
         token = jwt.encode(
@@ -30,19 +30,19 @@ def send_verification_email(sender, instance, created, **kwargs):
             fail_silently=False,
         )
 
-@receiver(pre_save, sender=CustomUser)
+@receiver(pre_save, sender=User)
 def update_password_changed_at(sender, instance, **kwargs):
     if instance.pk:
-        with contextlib.suppress(CustomUser.DoesNotExist):
-            old_user = CustomUser.objects.get(pk=instance.pk)
+        with contextlib.suppress(User.DoesNotExist):
+            old_user = User.objects.get(pk=instance.pk)
             if old_user.password != instance.password:
                 instance.password_changed_at = datetime.now()
 
-@receiver(post_save, sender=CustomUser)
+@receiver(post_save, sender=User)
 def create_user_settings(sender, instance, created, **kwargs):
     pass
 
-@receiver(post_save, sender=CustomUser)
+@receiver(post_save, sender=User)
 def send_welcome_email(sender, instance, created, **kwargs):
     if created and instance.is_active:
         send_mail(

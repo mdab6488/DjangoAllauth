@@ -1,4 +1,4 @@
-DjangoAllauth/                         # Root directory for the full-stack project combining Django and Next.js
+DjangoAllauth/                         # Root directory for the full-stack project combining Django and Next.js                 
 ├── backend/                           # Django Backend: Core server-side logic and API
 │   ├── AuthenticationApp/             # Custom Django app dedicated to user authentication functionality
 │   │   ├── migrations/                # Directory for database migration files to manage schema changes
@@ -13,7 +13,7 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   ├── throttling.py              # Implements rate limiting to prevent API abuse
 │   │   ├── urls.py                    # Defines URL patterns specific to this app
 │   │   ├── views.py                   # Contains API views and logic for handling requests
-│   ├── config/                        # Project-wide configuration files for Django
+│   ├── core/                        # Project-wide configuration files for Django
 │   │   ├── __init__.py                # Marks config as a Python package
 │   │   ├── asgi.py                    # ASGI entry point for asynchronous server deployment
 │   │   ├── settings.py                # Core Django settings (e.g., database, middleware, allauth config)
@@ -21,24 +21,31 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   ├── wsgi.py                    # WSGI entry point for traditional server deployment
 │   ├── env/                           # Stores environment-specific files (e.g., local .env)
 │   ├── media/                         # Directory for user-uploaded files (e.g., profile pictures)
-│   ├── staticfiles/                   # Collected static files for production deployment
+│   ├── static/                        # Collected static files for production deployment
 │   ├── .dockerignore                  # Specifies files to exclude from Docker builds (e.g., .git)
 │   ├── Dockerfile                     # Defines the Docker image for the Django backend
-│   ├── entrypoint.sh                  # Script executed when the Django container starts
+│   ├── entrypoint.sh                  # 
 │   ├── manage.py                      # Django CLI script for managing the project
 │   ├── requirements.txt               # Lists Python dependencies (e.g., Django, djangorestframework)
+│
+├── bin/                               # Scripts for deployment automation
+│   ├── post_compile                   # Heroku post-compile script for selective static file collection
 │
 ├── frontend/                          # Next.js Frontend: Modern UI with TypeScript
 │   ├── .husky/                        # Directory for Husky Git hooks (e.g., pre-commit linting)
 │   ├── .next/                         # Auto-generated build output for Next.js (not in version control)
-│   ├── .vscode                        
-│   │   ├── extensions.json                  
+│   ├── .vscode/                         # 
+│   │   ├── extensions.json                 
 │   │   ├── settings.json                  
 │   ├── .yarn/                         # Yarn cache and plugins for dependency management
 │   │   ├── cache/                  
 │   │   ├── releases/                  # Next.js app directory using the App Router
 │   │   │   ├── yarn-4.6.0.cjs
 │   │   ├── sdks/                  
+│   │   │   ├── eslint/
+│   │   │   ├── prettier/
+│   │   │   ├── typescript/
+│   │   │   ├── integrations.yml
 │   │   ├── unplugged/                  
 │   │   ├── install-state.gz                  
 │   ├── public/                        # Static assets accessible directly (e.g., favicon, images)
@@ -46,13 +53,16 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   ├── app/                       # Next.js app directory using the App Router
 │   │   │   ├── api/                   # API route handlers for server-side logic
 │   │   │   │   ├── [...path]/        # Catch-all dynamic route for proxying requests
-│   │   │   │   │   ├── route.ts      # Proxy handler forwarding requests to Django API
+│   │   │   │   │   │   ├── route.ts  # Proxy handler forwarding requests to Django API
+│   │   │   │   │   │   ├── health.ts  
 │   │   │   ├── login/                # Directory for the login page
 │   │   │   │   ├── page.tsx          # UI component rendering the login page
 │   │   │   ├── signup/               # Directory for the signup page
 │   │   │   │   ├── page.tsx          # UI component rendering the signup page
 │   │   │   ├── ClientLayout.tsx      # Client-side layout component for dynamic rendering
+│   │   │   ├── error.tsx         
 │   │   │   ├── favicon.ico           # Favicon file for the app (usually in public/, duplicated here)
+│   │   │   ├── global-error.tsx          
 │   │   │   ├── layout.tsx            # Root layout component wrapping all pages
 │   │   │   ├── page.tsx              # Default page component (e.g., homepage)
 │   │   │   ├── ServerLayout.tsx      # Server-side layout component for SSR
@@ -68,6 +78,7 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   │   │   ├── ErrorFallback.tsx # Fallback UI for error boundaries
 │   │   │   │   ├── Loading.tsx       # Loading spinner or placeholder component
 │   │   │   │   ├── ThemeProvider.tsx # Provides theming context (e.g., light/dark mode)
+│   │   ├── constants/                    # Custom React hooks for logic encapsulation
 │   │   ├── hooks/                    # Custom React hooks for logic encapsulation
 │   │   │   ├── useApi.ts             # Hook for making API requests to the backend
 │   │   │   ├── useAuth.ts            # Hook for managing authentication state
@@ -81,12 +92,14 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   │   ├── page.module.css       # CSS modules for scoped page styles
 │   │   │   ├── theme.ts              # Defines theme variables (e.g., colors, fonts)
 │   │   ├── types/                    # TypeScript type definitions for type safety
+│   │   │   ├── index.d.ts
 │   │   │   ├── index.ts              # Central export file for all custom types
+│   │   │   ├── next-auth.d.ts
 │   │   ├── utils/                    # General utility functions
 │   │   │   ├── createEmotionCache.ts # Sets up Emotion cache for SSR styling
+│   │   │   ├── errorLogging.ts
 │   ├── .dockerignore                 # Specifies files to exclude from Docker builds
 │   ├── .editorconfig                 # Ensures consistent code formatting across editors
-│   ├── .eslintrc.json                # ESLint configuration for linting JavaScript/TypeScript
 │   ├── .gitattributes                # Git attributes for handling line endings
 │   ├── .gitignore                    # Lists files and directories to ignore in Git
 │   ├── .pnp.cjs                      # Yarn Plug'n'Play configuration file
@@ -95,20 +108,26 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   ├── .yarnrc.yml                   # Yarn configuration for package management
 │   ├── Dockerfile                    # Defines the Docker image for the frontend
 │   ├── eslint.config.mjs             # Modern ESLint configuration (alternative to .eslintrc.json)
-│   ├── jest.config.ts                # 
+│   ├── jest.config.ts                # Jest configuration for testing
 │   ├── jest.setup.ts                 # Setup file for Jest testing framework
+│   ├── next-env.d.ts                 # TypeScript type definitions for Next.js
 │   ├── next.config.ts                # Configuration for Next.js (e.g., rewrites, webpack)
 │   ├── package.json                  # Lists Node.js dependencies and scripts
 │   ├── README.md                     # Frontend-specific documentation
 │   ├── tsconfig.json                 # TypeScript configuration for the frontend
+│   ├── yarn-debug.log
 │   ├── yarn.lock                     # Lockfile ensuring consistent dependency versions
 │
 ├── nginx/                            # Nginx setup for serving frontend and proxying backend
 │   ├── conf.d/                       # Directory for Nginx configuration files
 │   │   ├── default.conf              # Default server block for routing traffic
 │
+├── postgres/                            
+│   ├── initdb.d/                       
+│
+├── .dockerignore                             
 ├── .env                              # Stores environment variables for the entire stack
-├── .gitignore                        # Root-level Git ignore file for the project
+├── .slugignore                       # Specifies files to exclude from Heroku slug
 ├── docker-compose.yml                # Orchestrates Docker services (backend, frontend, nginx)
 ├── README.md                         # Main project documentation
-├── wait-for-it.sh                    # Utility script to delay service startup until dependencies are ready
+├── wait-for-it.sh                         # Main project documentation

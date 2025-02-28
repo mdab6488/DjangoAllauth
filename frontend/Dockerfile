@@ -1,45 +1,53 @@
 # syntax=docker/dockerfile:1.4
-FROM node:22-alpine AS builder
 
+# ===============
+# Builder Stage
+# ===============
+FROM node:22-alpine AS builder
 WORKDIR /app
 
+# Install dependencies
 RUN apk add --no-cache bash curl git && corepack enable
 
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+# Set environment variables for build stage
+ENV NEXT_TELEMETRY_DISABLED=1
+# Note: Not setting NODE_ENV to production for build stage to ensure devDependencies are installed
 
-COPY package.json yarn.lock .yarnrc.yml ./
-# Ensure this comes BEFORE copying source code
-COPY --link .yarnrc.yml ./
-COPY --link .yarn ./.yarn
+# Copy package files
+COPY --link package.json package-lock.json* ./
 
-COPY --link package.json yarn.lock ./
+# Install all dependencies including devDependencies
+RUN npm install
 
-RUN yarn set version stable && \
-    yarn install --immutable --network-timeout 100000 --verbose
-
+# Copy application source
 COPY . .
 
+# Build the application with cache mount
 RUN --mount=type=cache,target=/app/.next/cache \
-    yarn build
+    npm run build
 
+# ===============
+# Runner Stage
+# ===============
 FROM node:22-alpine AS runner
-
 WORKDIR /app
 
+# Set environment variables
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000
 
-RUN apk add --no-cache curl && corepack enable && \
+# Install runtime dependencies and setup user
+RUN apk add --no-cache curl && \
     addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs && \
-    mkdir .next && chown nextjs:nodejs .next
+    mkdir -p .next && chown nextjs:nodejs .next
 
-COPY --from=builder --chown=nextjs:nodejs /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/ ./
+# Copy required files from builder
+COPY --from=builder --chown=nextjs:nodejs /app/package.json /app/package-lock.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/ ./.next/standalone/
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static/ ./.next/static/
 COPY --from=builder --chown=nextjs:nodejs /app/public/ ./public/
-COPY --from=builder --chown=nextjs:nodejs /app/.yarn/cache ./.yarn/cache
-COPY --from=builder --chown=nextjs:nodejs /app/.pnp.* ./
 
+# Switch to non-root user
 USER nextjs
 
 EXPOSE 3000
@@ -47,4 +55,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-CMD ["yarn", "start"]
+CMD ["npm", "run", "start"]

@@ -27,4 +27,6 @@ urlpatterns = [
     # Email verification
     path('email/verify/<str:token>/', views.EmailVerificationView.as_view(), name='verify-email'),
     path('email/resend/', views.ResendVerificationEmailView.as_view(), name='resend-verification'),
+    
+    path('healthcheck/', views.healthcheck, name='healthcheck'),
 ]

@@ -2,27 +2,11 @@
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.*
-.yarn/cache
-
-# Yarn 2+ (keep these)
-.yarn/*
-!.yarn/releases
-!.yarn/patches
-!.yarn/plugins
-!.yarnrc.yml
-!.yarn/releases/yarn-*.cjs
-!.yarn/versions
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
 
 # testing
 /coverage
 
 # next.js
-/.next/
 /out/
 
 # production
@@ -34,9 +18,6 @@
 
 # debug
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*

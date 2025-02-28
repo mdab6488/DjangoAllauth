@@ -4,6 +4,7 @@ import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+
 const Header = () => {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);

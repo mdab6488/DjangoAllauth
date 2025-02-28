@@ -1,10 +1,8 @@
 # .dockerignore
 
-# Node/npm/yarn artifacts
+# Node/npm artifacts
 **/node_modules
-.yarn/cache  # Only if you're not using offline cache
-.yarn/install-state.gz
-.pnp.*
+npm-debug.log*
 
 # Build outputs
 .next
@@ -21,8 +19,6 @@ out
 *.log
 logs
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Version control
 .git
@@ -43,7 +39,3 @@ coverage
 Dockerfile*
 docker-compose*
 .dockerignore
-
-# Keep these lines at the BOTTOM of .dockerignore
-!.yarn/cache
-!.yarnrc.yml

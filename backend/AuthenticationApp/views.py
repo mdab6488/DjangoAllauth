@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.http import JsonResponse
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -18,6 +19,12 @@ import jwt
 from .serializers import UserSerializer, UserUpdateSerializer
 from .permissions import IsEmailVerified
 from .throttling import EmailVerificationRateThrottle, LoginRateThrottle
+
+from django.db import connections
+from django.db.utils import OperationalError
+import logging
+import os
+import time
 
 User = get_user_model()
 
@@ -410,3 +417,75 @@ class UserSettingsView(APIView):
 
         user.save()
         return Response({'message': 'Settings updated successfully.'})
+
+
+
+logger = logging.getLogger(__name__)
+
+def healthcheck(request):
+    """
+    Health check endpoint to verify the application is running correctly.
+    Checks:
+    1. Database connection
+    2. Response time
+    3. Basic environment configuration
+    """
+    start_time = time.time()
+    health_status = {
+        "status": "ok",
+        "timestamp": start_time,
+        "checks": {
+            "database": check_database(),
+            "environment": check_environment(),
+        }
+    }
+    
+    # Calculate response time
+    response_time = time.time() - start_time
+    health_status["response_time"] = round(response_time * 1000, 2)  # Convert to ms
+    
+    # Set overall status
+    if any(check.get("status") != "ok" for check in health_status["checks"].values()):
+        health_status["status"] = "unhealthy"
+        status_code = 503  # Service Unavailable
+    else:
+        status_code = 200
+    
+    return JsonResponse(health_status, status=status_code)
+
+def check_database():
+    """Check if database connection is working"""
+    try:
+        # Verify database connection is alive
+        db_conn = connections["default"]
+        db_conn.cursor()
+        return {
+            "status": "ok",
+            "message": "Database connection established"
+        }
+    except OperationalError as e:
+        logger.error(f"Database health check failed: {str(e)}")
+        return {
+            "status": "error",
+            "message": f"Database connection failed: {str(e)}"
+        }
+
+def check_environment():
+    """Check critical environment variables"""
+    required_vars = [
+        "DJANGO_SETTINGS_MODULE",
+        "DATABASE_URL",
+        "DJANGO_SECRET_KEY"
+    ]
+    
+    missing_vars = [var for var in required_vars if not os.environ.get(var)]
+    
+    if missing_vars:
+        return {
+            "status": "warning",
+            "message": f"Missing environment variables: {', '.join(missing_vars)}"
+        }
+    return {
+        "status": "ok",
+        "message": "All required environment variables present"
+    }

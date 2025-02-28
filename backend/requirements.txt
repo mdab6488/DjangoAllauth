@@ -54,3 +54,4 @@ config
 django-cors-headers
 dj-database-url
 
+PyJWT

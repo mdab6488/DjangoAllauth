@@ -1,4 +1,4 @@
-docker-compose up --build -d
+docker-compose up --build --no-cache -d
 
 1️⃣ Quick Restart (Without Rebuilding Everything)
 If your changes are mostly configurations, environment variables, or minor updates, run:
@@ -12,6 +12,10 @@ If you made code changes in the backend or frontend, but not in dependencies (li
 docker-compose up -d --no-deps --build frontend
 docker-compose up -d --no-deps --build backend
 This will only rebuild the backend and frontend without touching PostgreSQL or other services.
+
+docker-compose build --no-cache frontend
+docker-compose up -d --no-deps frontend
+
 
 3️⃣ Full Rebuild (If You Changed Dependencies or Installed New Packages)
 If you updated:
@@ -45,3 +49,24 @@ If you have Git Bash, WSL (Windows Subsystem for Linux), or another Unix-like sh
 
 $Env:DOCKER_BUILDKIT = "1"; docker-compose up -d --no-deps --build frontend
 For PowerShell, I recommend Option 1 as it’s clean and aligns with PowerShell conventions:
+
+
+docker system prune -f
+    Total reclaimed space: 6.616GB
+docker system prune -a --volumes
+    Total reclaimed space: 4.609GB
+
+docker-compose exec backend env | grep POSTGRES_HOST
+POSTGRES_HOST=db
+
+cat .env | grep POSTGRES_HOST
+POSTGRES_HOST=postgres
+
+docker-compose --env-file .env restart backend
+
+docker-compose exec backend sh -c "export POSTGRES_HOST=postgres && python manage.py migrate"
+
+- ./.env:/app/.env
+
+
+docker exec -it DjangoAllauth_backend bash

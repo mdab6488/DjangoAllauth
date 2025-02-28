@@ -1,8 +1,10 @@
+// utils/createEmotionCache.ts
+import { EmotionCache } from '@emotion/cache';
 import createCache from '@emotion/cache';
 
 const isBrowser = typeof document !== 'undefined';
 
-export default function createEmotionCache() {
+export default function createEmotionCache(): EmotionCache {
   let insertionPoint: HTMLElement | undefined;
 
   if (isBrowser) {
@@ -12,11 +14,10 @@ export default function createEmotionCache() {
     insertionPoint = emotionInsertionPoint ?? undefined;
   }
 
-  // Only include insertionPoint if it exists
-  const cacheOptions: { key: string; insertionPoint?: HTMLElement } = { key: 'css' };
-  if (insertionPoint) {
-    cacheOptions.insertionPoint = insertionPoint;
-  }
+  const cacheOptions: { key: string; insertionPoint?: HTMLElement } = {
+    key: 'css',
+    ...(insertionPoint && { insertionPoint }),
+  };
 
   return createCache(cacheOptions);
 }

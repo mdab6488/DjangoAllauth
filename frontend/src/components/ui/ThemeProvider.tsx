@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from 'styled-components';
 import { useTheme } from '@/styles/theme';
 
 const MUIThemeProvider = ({ children }: { children: React.ReactNode }) => {
