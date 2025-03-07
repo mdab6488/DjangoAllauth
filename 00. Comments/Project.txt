@@ -45,3 +45,10 @@ Installing devDependencies:
 
 
 npm install @emotion/react @emotion/styled @mui/material @mui/icons-material axios
+
+
+Secret Key Management:
+
+In production, NEVER hardcode the secret key
+Use a truly random, long secret key generated specifically for production
+Consider using environment variables or a secure secret management system

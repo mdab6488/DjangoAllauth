@@ -1,8 +1,8 @@
 {
-  "/_not-found/page": "/_not-found",
-  "/api/[...path]/route": "/api/[...path]",
   "/favicon.ico/route": "/favicon.ico",
+  "/api/[...path]/route": "/api/[...path]",
+  "/_not-found/page": "/_not-found",
+  "/login/page": "/login",
   "/page": "/",
-  "/signup/page": "/signup",
-  "/login/page": "/login"
+  "/signup/page": "/signup"
 }

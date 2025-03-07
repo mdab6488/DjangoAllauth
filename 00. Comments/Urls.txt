@@ -1,52 +1,29 @@
 =================================================
-1. API Documentation (if you've set up drf-yasg or similar):
-=================================================
-http://localhost/api/docs/          # Swagger UI
-http://localhost/api/redoc/         # ReDoc UI
+1. Django Admin Interface
+URL: /admin/
+Access the Django admin panel (requires admin privileges).
 
 =================================================
-2. Admin Interface:
-=================================================
-http://localhost/admin/
+2. API Documentation
+Swagger UI: /api/swagger/
+Interactive API documentation for testing endpoints.
 
+Redoc: /api/redoc/
+Alternative API documentation with a clean format.
 =================================================
-3. Authentication & Token URLs (under api/v1/):
-=================================================
-http://localhost/api/
-http://localhost/api/v1/register/
-http://localhost/api/v1/profile/
-http://localhost/api/v1/profile/update/
-http://localhost/api/v1/token/
-http://localhost/api/v1/token/refresh/
-http://localhost/api/v1/password/change/
+3. Authentication API Endpoints
+Base Path: /api/auth/
 
-=================================================
-4. Profile and Settings URLs (under api/):
-=================================================
-http://localhost/api/profile/
-http://localhost/api/profile/update/
-http://localhost/api/profile/password/
-http://localhost/api/profile/delete/
-http://localhost/api/profile/activity/
-http://localhost/api/profile/settings/
+User Registration: /api/auth/register/
+User Login: /api/auth/login/
 
+Health Check: /api/auth/healthcheck/
 =================================================
-5. Email Verification URLs:
+4. Frontend Pages (Next.js)
+(Handled by the Next.js app, not Django)
+
+/login – Login page (rendered by Next.js)
+/signup – Signup page (rendered by Next.js)
+
+/profile – User profile page
 =================================================
-http://localhost/api/email/verify/<token>/
-http://localhost/api/email/resend/
-
-
-
-=================================================
--------------------------------------------------
-=================================================
-http://localhost/login
-http://localhost/signup
-http://localhost/api/auth/login/
-http://localhost/api/auth/register/
-http://localhost/api/auth/logout/
-http://localhost/api/auth/password/reset/
-http://localhost/api/auth/password/reset/confirm/
-
-

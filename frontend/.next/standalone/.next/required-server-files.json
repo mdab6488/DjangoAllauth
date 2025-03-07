@@ -1,7 +1,10 @@
 {
   "version": 1,
   "config": {
-    "env": {},
+    "env": {
+      "NEXT_PUBLIC_API_URL": "http://localhost:8000",
+      "NEXT_PUBLIC_SITE_URL": "http://localhost:3000"
+    },
     "webpack": null,
     "eslint": {
       "ignoreDuringBuilds": true

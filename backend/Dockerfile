@@ -1,13 +1,16 @@
-# Use multi-stage build to reduce final image size
-# Stage 1: Builder
+# ===============
+# # Stage 1: Builder
+# ===============
 FROM python:3.12-slim-bookworm AS builder
 
+ARG ENVIRONMENT
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-core.settings}
 
 WORKDIR /app
 
@@ -18,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     curl \
     git \
+    gcc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -25,26 +29,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Upgrade pip and install pip-tools
+RUN pip install --upgrade pip pip-tools
+
 # Install Python dependencies with pip-tools for better dependency management
 COPY requirements.txt .
-RUN pip install --upgrade pip pip-tools && \
-    pip-compile requirements.txt --output-file requirements.lock && \
-    pip install -r requirements.lock && \
-    pip install psycopg2-binary gunicorn
+RUN pip-compile requirements.txt --output-file requirements.lock --quiet && \
+    pip install -r requirements.lock --no-cache-dir
 
-# Generate required static files during build
+# Copy application code
 COPY . .
 
-# Collect static using a dummy SECRET_KEY
-RUN SECRET_KEY=dummy_key_for_collectstatic \
-    DATABASE_URL=sqlite:///dummy.db \
-    ALLOWED_HOSTS=localhost \
-    CORS_ORIGIN_WHITELIST=localhost:3000,localhost:8000 \
-    CSRF_TRUSTED_ORIGINS=https://localhost:3000,https://localhost:8000 \
-    DJANGO_SETTINGS_MODULE=core.settings \
-    python manage.py collectstatic --noinput
-
+# ===============
 # Stage 2: Runtime
+# ===============
 FROM python:3.12-slim-bookworm
 
 LABEL maintainer="ALAMIN mdab6488@gmail.com"
@@ -55,8 +53,6 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
-    DJANGO_SETTINGS_MODULE=core.settings \
-    DATABASE=postgres \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH="/app"
 
@@ -84,22 +80,18 @@ COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appgroup . .
 COPY --from=builder --chown=appuser:appgroup /app/static /app/static
 
-# Copy wait-for-it.sh script and make it executable
+# Copy and fix permissions for wait-for-it.sh
 COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
 RUN chmod +x /usr/local/bin/wait-for-it.sh
 
-# Make entrypoint script executable 
+# Make entrypoint script executable
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Create and configure directories with proper permissions
 RUN mkdir -p /app/media /app/logs && \
     chown -R appuser:appgroup /app/media /app/logs /app/static && \
     chmod -R 755 /app/media /app/logs /app/static
-
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8000/healthcheck/ || exit 1
 
 # Switch to non-root user
 USER appuser
@@ -108,4 +100,5 @@ USER appuser
 EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--worker-class", "gthread", "--threads", "2", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "core.wsgi:application"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--worker-class", "gthread", "--threads", "2", "--timeout", "240", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "core.wsgi:application"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

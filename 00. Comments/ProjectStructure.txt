@@ -13,13 +13,15 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   ├── throttling.py              # Implements rate limiting to prevent API abuse
 │   │   ├── urls.py                    # Defines URL patterns specific to this app
 │   │   ├── views.py                   # Contains API views and logic for handling requests
-│   ├── core/                        # Project-wide configuration files for Django
+│   ├── collected_static/              
+│   ├── core/                          # Project-wide configuration files for Django
 │   │   ├── __init__.py                # Marks config as a Python package
 │   │   ├── asgi.py                    # ASGI entry point for asynchronous server deployment
 │   │   ├── settings.py                # Core Django settings (e.g., database, middleware, allauth config)
 │   │   ├── urls.py                    # Root URL configuration, mapping routes to apps
 │   │   ├── wsgi.py                    # WSGI entry point for traditional server deployment
 │   ├── env/                           # Stores environment-specific files (e.g., local .env)
+│   ├── logs/                          # 
 │   ├── media/                         # Directory for user-uploaded files (e.g., profile pictures)
 │   ├── static/                        # Collected static files for production deployment
 │   ├── .dockerignore                  # Specifies files to exclude from Docker builds (e.g., .git)
@@ -27,34 +29,23 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   ├── entrypoint.sh                  # 
 │   ├── manage.py                      # Django CLI script for managing the project
 │   ├── requirements.txt               # Lists Python dependencies (e.g., Django, djangorestframework)
+│   ├── wait-for-it.sh                 # 
 │
 ├── bin/                               # Scripts for deployment automation
 │   ├── post_compile                   # Heroku post-compile script for selective static file collection
 │
 ├── frontend/                          # Next.js Frontend: Modern UI with TypeScript
-│   ├── .husky/                        # Directory for Husky Git hooks (e.g., pre-commit linting)
-│   ├── .next/                         # Auto-generated build output for Next.js (not in version control)
-│   ├── .vscode/                         # 
-│   │   ├── extensions.json                 
-│   │   ├── settings.json                  
-│   ├── .yarn/                         # Yarn cache and plugins for dependency management
-│   │   ├── cache/                  
-│   │   ├── releases/                  # Next.js app directory using the App Router
-│   │   │   ├── yarn-4.6.0.cjs
-│   │   ├── sdks/                  
-│   │   │   ├── eslint/
-│   │   │   ├── prettier/
-│   │   │   ├── typescript/
-│   │   │   ├── integrations.yml
-│   │   ├── unplugged/                  
-│   │   ├── install-state.gz                  
+│   ├── .next/                         # Auto-generated build output for Next.js (not in version control)  
+│   │   ├── app/                       #               
+│   ├── node_modules/                  # 
 │   ├── public/                        # Static assets accessible directly (e.g., favicon, images)
 │   ├── src/                           # Source code directory for the frontend application
 │   │   ├── app/                       # Next.js app directory using the App Router
 │   │   │   ├── api/                   # API route handlers for server-side logic
 │   │   │   │   ├── [...path]/        # Catch-all dynamic route for proxying requests
 │   │   │   │   │   │   ├── route.ts  # Proxy handler forwarding requests to Django API
-│   │   │   │   │   │   ├── health.ts  
+│   │   │   │   ├── health/        # Catch-all dynamic route for proxying requests
+│   │   │   │   │   │   ├── route.ts  
 │   │   │   ├── login/                # Directory for the login page
 │   │   │   │   ├── page.tsx          # UI component rendering the login page
 │   │   │   ├── signup/               # Directory for the signup page
@@ -100,27 +91,36 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   │   ├── errorLogging.ts
 │   ├── .dockerignore                 # Specifies files to exclude from Docker builds
 │   ├── .editorconfig                 # Ensures consistent code formatting across editors
-│   ├── .gitattributes                # Git attributes for handling line endings
 │   ├── .gitignore                    # Lists files and directories to ignore in Git
-│   ├── .pnp.cjs                      # Yarn Plug'n'Play configuration file
-│   ├── .pnp.loader.mjs               # Yarn Plug'n'Play loader for modules
 │   ├── .prettierrc                   # Prettier configuration for code formatting
-│   ├── .yarnrc.yml                   # Yarn configuration for package management
+│   ├── dev.sh                        # 
 │   ├── Dockerfile                    # Defines the Docker image for the frontend
+│   ├── env.d.ts                      # 
 │   ├── eslint.config.mjs             # Modern ESLint configuration (alternative to .eslintrc.json)
 │   ├── jest.config.ts                # Jest configuration for testing
 │   ├── jest.setup.ts                 # Setup file for Jest testing framework
 │   ├── next-env.d.ts                 # TypeScript type definitions for Next.js
 │   ├── next.config.ts                # Configuration for Next.js (e.g., rewrites, webpack)
+│   ├── package-lock.json             # 
 │   ├── package.json                  # Lists Node.js dependencies and scripts
 │   ├── README.md                     # Frontend-specific documentation
 │   ├── tsconfig.json                 # TypeScript configuration for the frontend
-│   ├── yarn-debug.log
-│   ├── yarn.lock                     # Lockfile ensuring consistent dependency versions
+│   ├── env.d.ts                      # 
+│
+├── logs_volume/                      # 
+│   ├── app.log                       # 
 │
 ├── nginx/                            # Nginx setup for serving frontend and proxying backend
 │   ├── conf.d/                       # Directory for Nginx configuration files
 │   │   ├── default.conf              # Default server block for routing traffic
+│   ├── logs/                         # 
+│   │   ├── access.log                # 
+│   │   ├── error.log                 # 
+│   ├── conf.d/                       # 
+│   │   ├── dhparam.pem               # 
+│   │   ├── fullchain.pem             # 
+│   │   ├── privkey.pem               # 
+│   ├── Dockerfile                    # 
 │
 ├── postgres/                            
 │   ├── initdb.d/                       
@@ -130,4 +130,3 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 ├── .slugignore                       # Specifies files to exclude from Heroku slug
 ├── docker-compose.yml                # Orchestrates Docker services (backend, frontend, nginx)
 ├── README.md                         # Main project documentation
-├── wait-for-it.sh                         # Main project documentation

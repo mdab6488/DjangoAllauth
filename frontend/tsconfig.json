@@ -9,7 +9,7 @@
 
     // Modules
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "preserveSymlinks": true,
     "baseUrl": ".",
     "paths": {

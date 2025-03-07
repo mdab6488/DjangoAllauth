@@ -39,3 +39,12 @@ coverage
 Dockerfile*
 docker-compose*
 .dockerignore
+
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+README.md
+.next

@@ -1,4 +1,3 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -17,6 +16,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  // If you have environment variables you want to expose
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  }
 };
 
-module.exports = nextConfig;
+export default nextConfig;

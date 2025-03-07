@@ -44,7 +44,7 @@ export const login = async (email: string, password: string): Promise<AuthRespon
 
 export const register = async (email: string, password1: string, password2: string): Promise<AuthResponse> => {
   try {
-    const response = await axiosInstance.post<AuthResponse>('/auth/registration/', {
+    const response = await axiosInstance.post<AuthResponse>('${process.env.NEXT_PUBLIC_API_URL}/register/', {
       email,
       password1,
       password2,
