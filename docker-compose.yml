@@ -31,10 +31,6 @@ services:
       dockerfile: Dockerfile.postgres
     container_name: DjangoAllauth_postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "127.0.0.1:${POSTGRES_PORT}:5432"  # Only bind to localhost for security
     volumes:
@@ -63,6 +59,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    <<: [*env-config]
 
   backend:
     build:
@@ -77,22 +74,10 @@ services:
       - static_volume:/app/collected_static
       - media_volume:/app/media
       - logs_volume:/app/logs
+      - ./nginx/ssl/nginx-selfsigned.crt:/etc/nginx/ssl/nginx-selfsigned.crt:ro
+      - ./nginx/ssl/nginx-selfsigned.key:/etc/nginx/ssl/nginx-selfsigned.key:ro
     ports:
       - "127.0.0.1:${BACKEND_PORT}:8000" # Use BACKEND_PORT from .env or default to 8000, bind to localhost only
-    environment:
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - CORS_ORIGIN_WHITELIST=${CORS_ORIGIN_WHITELIST}
-      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
-      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
-      - DATABASE_URL=${DATABASE_URL}
-      - LOG_DIR=/app/logs
-      - COLLECT_STATIC=true
-      - CHECK_APP_HEALTH=true
     networks:
       DjangoAllauth_network:
         aliases:
@@ -101,17 +86,19 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      test: ["CMD", "curl", "-k", "https://localhost:8000/healthcheck/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    command: >
-      sh -c "
-        mkdir -p /app/logs &&
-        /usr/local/bin/wait-for-it.sh postgres:${POSTGRES_PORT} --timeout=40 --strict &&
-        python manage.py migrate &&
-        exec python manage.py runserver 0.0.0.0:8000"
+    entrypoint: ["/app/entrypoint.sh"]
+    command: [
+      "gunicorn",
+      "--certfile=/etc/nginx/ssl/nginx-selfsigned.crt",
+      "--keyfile=/etc/nginx/ssl/nginx-selfsigned.key",
+      "-b", "0.0.0.0:8000",
+      "core.wsgi:application"
+    ]
     <<: [*resource-limits, *logging-config, *env-config]
 
   frontend:
@@ -129,12 +116,6 @@ services:
       - next_cache:/app/.next
     ports:
       - "127.0.0.1:3000:3000"  # Only bind to localhost for security
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
-      - CHOKIDAR_USEPOLLING=${DEVELOPMENT_MODE:+true}
-      - WATCHPACK_POLLING=${DEVELOPMENT_MODE:+true}
     networks:
       - DjangoAllauth_network
     stdin_open: true
@@ -164,21 +145,21 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl
       - nginx_logs_volume:/var/log/nginx
-    entrypoint: ["/bin/sh", "-c"]
     environment:
-      - BACKEND_HOST=backend
-      - BACKEND_PORT=${BACKEND_PORT}
-      - FRONTEND_HOST=frontend
-      - FRONTEND_PORT=${FRONTEND_PORT}
-    command:
-      - |
-        if [ ! -f /etc/nginx/ssl/nginx-selfsigned.crt ]; then
-          openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-            -keyout /etc/nginx/ssl/nginx-selfsigned.key \
-            -out /etc/nginx/ssl/nginx-selfsigned.crt \
-            -subj "/CN=localhost";
-        fi
-        exec nginx -g "daemon off;"
+      - SSL_CERT=/etc/nginx/ssl/nginx-selfsigned.crt
+      - SSL_KEY=/etc/nginx/ssl/nginx-selfsigned.key
+    command: |-
+      /bin/sh -c '
+      mkdir -p /etc/nginx/ssl && \
+      if [ ! -f "$$SSL_CERT" ] || [ ! -f "$$SSL_KEY" ]; then
+        echo "Generating SSL certificate...";
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+          -keyout "$$SSL_KEY" \
+          -out "$$SSL_CERT" \
+          -subj "/CN=localhost";
+      fi;
+      exec nginx -g "daemon off;"
+      '
     depends_on:
       backend:
         condition: service_healthy
@@ -191,7 +172,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    <<: [*resource-limits, *logging-config, *security-opts]
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
 
 networks:
   DjangoAllauth_network:

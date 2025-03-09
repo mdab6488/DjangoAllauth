@@ -80,7 +80,7 @@ until pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER
     sleep ${DB_RETRY_INTERVAL}
 done
 
-log "INFO" "☑ PostgreSQL is available"
+log "INFO" "✔️ PostgreSQL is available"
 
 # Run database health check with improved error handling
 log "INFO" "Verifying database connection..."
@@ -105,7 +105,7 @@ try:
             with conn.cursor() as cursor:
                 cursor.execute('SELECT 1')
                 cursor.fetchone()
-            print('☑ -- Database connection successful')
+            print('✔️ -- Database connection successful')
             break
         except OperationalError as e:
             if time.time() - start_time > timeout:
@@ -124,7 +124,7 @@ if ! python manage.py migrate --noinput; then
     log "ERROR" "Database migration failed"
     exit 1
 fi
-log "INFO" "☑ -- Database migrations completed successfully"
+log "INFO" "✔️ -- Database migrations completed successfully"
 
 # Collect static files if enabled
 if [[ "${COLLECT_STATIC}" == "true" ]]; then
@@ -133,7 +133,7 @@ if [[ "${COLLECT_STATIC}" == "true" ]]; then
         log "ERROR" "Static file collection failed"
         exit 1
     fi
-    log "INFO" "☑ -- Static files collected successfully"
+    log "INFO" "✔️ -- Static files collected successfully"
 fi
 
 # Check for application health needs with more detailed output
@@ -143,7 +143,7 @@ if [[ "${CHECK_APP_HEALTH}" == "true" ]]; then
         log "WARN" "Application health check reported issues"
         # Continue but warn - not failing as checks might be informational
     else
-        log "INFO" "☑ -- Application health check passed"
+        log "INFO" "✔️ -- Application health check passed"
     fi
 fi
 
@@ -167,9 +167,9 @@ print(User.objects.filter(email='${DJANGO_SUPERUSER_EMAIL}', is_superuser=True).
             DJANGO_SUPERUSER_PASSWORD="${DJANGO_SUPERUSER_PASSWORD}" \
             python manage.py createsuperuser --noinput 2>/dev/null || true
             
-            log "INFO" "☑ -- Superuser creation completed"
+            log "INFO" "✔️ -- Superuser creation completed"
         else
-            log "INFO" "☑ -- Superuser already exists"
+            log "INFO" "✔️ -- Superuser already exists"
         fi
     else
         log "WARN" "CREATE_SUPERUSER is true but required environment variables are not set"
@@ -185,7 +185,7 @@ if [[ -n "${INIT_COMMAND}" ]]; then
         log "ERROR" "Initialization command failed"
         exit 1
     fi
-    log "INFO" "☑-- Initialization command completed"
+    log "INFO" "✔️-- Initialization command completed"
 fi
 
 # Check for updates to Django security advisories
@@ -194,5 +194,5 @@ if [[ "${CHECK_SECURITY_UPDATES}" == "true" ]]; then
     python -m pip list --outdated | grep -i django || true
 fi
 
-log "INFO" "☑ -- Entrypoint tasks completed, launching application..."
+log "INFO" "✔️ -- Entrypoint tasks completed, launching application..."
 exec "$@"

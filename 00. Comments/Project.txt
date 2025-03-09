@@ -52,3 +52,61 @@ Secret Key Management:
 In production, NEVER hardcode the secret key
 Use a truly random, long secret key generated specifically for production
 Consider using environment variables or a secure secret management system
+
+
+A Django backend with a custom authentication app
+A Next.js frontend with TypeScript
+Nginx for serving the frontend and proxying to the backend
+Docker for containerization
+
+    ~ Change Meta options on user
+
+    - Remove index Authenticat_email_f25bf9_idx from user
+
+    - Remove index Authenticat_last_ac_9fcac4_idx from user
+
+    - Remove index Authenticat_is_acti_d89ed3_idx from user
+
+    - Remove field account_locked_until from user
+
+    - Remove field avatar from user
+
+    - Remove field backup_codes from user
+
+    - Remove field bio from user
+
+    - Remove field date_of_birth from user
+
+    - Remove field deleted_at from user
+
+    - Remove field email_notifications from user
+
+    - Remove field email_verified_at from user
+
+    - Remove field failed_login_attempts from user
+
+    - Remove field is_email_verified from user
+
+    - Remove field language from user
+
+    - Remove field last_active_at from user
+
+    - Remove field last_failed_login from user
+
+    - Remove field last_login_ip from user
+
+    - Remove field password_changed_at from user
+
+    - Remove field phone_number from user
+
+    - Remove field push_notifications from user
+
+    - Remove field theme from user
+
+    - Remove field two_factor_enabled from user
+
+
+🎯 Final Decision
+For development → Keep depends_on.
+For production → Remove it & rely on Nginx failover logic.
+

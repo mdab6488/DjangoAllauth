@@ -22,11 +22,13 @@ from .throttling import EmailVerificationRateThrottle, LoginRateThrottle
 
 from django.db import connections
 from django.db.utils import OperationalError
+from django.core.exceptions import ImproperlyConfigured
 import logging
 import os
 import time
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -417,10 +419,6 @@ class UserSettingsView(APIView):
 
         user.save()
         return Response({'message': 'Settings updated successfully.'})
-
-
-
-logger = logging.getLogger(__name__)
 
 def healthcheck(request):
     """

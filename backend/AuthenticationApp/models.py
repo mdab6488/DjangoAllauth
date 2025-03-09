@@ -47,7 +47,7 @@ class User(AbstractUser):
     Custom User model that uses email as the unique identifier and adds
     additional fields for enhanced user management and security.
     """
-    # Remove username field as we use email
+    # Remove the default username field
     username = None
 
     # Basic Information
@@ -59,6 +59,13 @@ class User(AbstractUser):
         }
     )
     
+    # Define email as the username field
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []  # Remove 'username' from required fields
+    
+    # Set the custom manager
+    objects = CustomUserManager()
+    
     # Improved timezone field with proper choices
     timezone = models.CharField(
         _('timezone'),
@@ -68,6 +75,21 @@ class User(AbstractUser):
         choices=[(tz, tz) for tz in sorted(getattr(settings, 'TIMEZONE_CHOICES', [settings.TIME_ZONE]))]
     )
     
+        # Improved timezone field with proper choices
+    timezone = models.CharField(
+        _('timezone'),
+        max_length=50,
+        default=settings.TIME_ZONE,
+        # Generate choices from pytz or zoneinfo
+        choices=[(tz, tz) for tz in sorted(getattr(settings, 'TIMEZONE_CHOICES', [settings.TIME_ZONE]))]
+    )
+    
+    def _reset_failed_attempts_if_needed(self, now):
+        """Reset failed attempts count if last attempt was more than 24 hours ago."""
+        if self.last_failed_login and (now - self.last_failed_login).total_seconds() > 24 * 3600:
+            self.failed_login_attempts = 0
+            self.save(update_fields=['failed_login_attempts'])
+
     # Improved login attempt tracking with rate limiting
     def record_login_attempt(self, success: bool, ip_address: str = None):
         """
@@ -77,20 +99,15 @@ class User(AbstractUser):
             success (bool): Whether the login attempt was successful
             ip_address (str, optional): The IP address of the login attempt
         """
-        now = timezone.now()
-        
         if success:
+            now = timezone.now()
             self.failed_login_attempts = 0
-            self.last_login_ip = ip_address
+            self._reset_failed_attempts_if_needed(now)
+            self._handle_failed_login_attempt(now)
             self.last_login = now
             self.account_locked_until = None
             self.save(update_fields=['failed_login_attempts', 'last_login_ip', 'last_login', 'account_locked_until'])
-        else:
-            # Reset failed attempts count if last attempt was more than 24 hours ago
-            if self.last_failed_login and (now - self.last_failed_login).total_seconds() > 86400:
-                self.failed_login_attempts = 0
-                
-            self.failed_login_attempts += 1
+            self._handle_failed_login_attempt(now)
             self.last_failed_login = now
             
             # Progressive lockout periods based on number of failed attempts

@@ -27,6 +27,10 @@ docker exec -it DjangoAllauth_postgres pg_ctl stop -m fast
 docker-compose build postgres
 docker-compose down -v
 docker-compose up
+
+docker logs DjangoAllauth_postgres
+docker-compose exec backend env
+docker-compose exec postgres printenv SSL_CERT
 ====================================
 
 docker-compose exec postgres psql -U $auth_user -d $auth_password -c "SELECT pg_database.datname FROM pg_database;"
