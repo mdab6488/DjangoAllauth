@@ -9,3 +9,16 @@ chmod 600 ./nginx/ssl/fullchain.pem
 
 apt update
 apt install certbot python3-certbot-nginx
+
+====================================================
+# Generate private key
+openssl genrsa -out nginx-selfsigned.key 2048
+
+# Generate CSR (Certificate Signing Request)
+openssl req -new -key nginx-selfsigned.key -out nginx-selfsigned.csr -subj "//CN=localhost"
+
+# Generate self-signed certificate
+openssl x509 -req -days 365 -in nginx-selfsigned.csr -signkey nginx-selfsigned.key -out nginx-selfsigned.crt
+
+# Generate DH parameters
+openssl dhparam -out dhparam.pem 2048

@@ -11,11 +11,17 @@ from .models import User  # Use relative import
 @receiver(post_save, sender=User)
 def send_verification_email(sender, instance, created, **kwargs):
     if created and not instance.is_superuser:
+        # Enhanced JWT token with more claims for security
+        token_payload = {
+            'user_id': instance.id,
+            'email': instance.email,
+            'exp': datetime.now(timezone.utc) + timedelta(days=1),
+            'iat': datetime.now(timezone.utc),
+            'type': 'email_verification'
+        }
+        
         token = jwt.encode(
-            {
-                'user_id': instance.id,
-                'exp': datetime.now(timezone.utc) + timedelta(days=1),
-            },
+            token_payload,
             settings.SECRET_KEY,
             algorithm='HS256',
         )
@@ -24,11 +30,12 @@ def send_verification_email(sender, instance, created, **kwargs):
 
         send_mail(
             'Verify your email',
-            f'Welcome to our platform!\n\nPlease click the following link to verify your email: {verification_url}',
+            f'Welcome to our platform!\n\nPlease click the following link to verify your email: {verification_url}\n\nThis link will expire in 24 hours.',
             settings.DEFAULT_FROM_EMAIL,
             [instance.email],
             fail_silently=False,
         )
+
 
 @receiver(pre_save, sender=User)
 def update_password_changed_at(sender, instance, **kwargs):
@@ -36,7 +43,8 @@ def update_password_changed_at(sender, instance, **kwargs):
         with contextlib.suppress(User.DoesNotExist):
             old_user = User.objects.get(pk=instance.pk)
             if old_user.password != instance.password:
-                instance.password_changed_at = datetime.now()
+                # Use Django's timezone for timezone-aware timestamps
+                instance.password_changed_at = timezone.now()
 
 @receiver(post_save, sender=User)
 def create_user_settings(sender, instance, created, **kwargs):

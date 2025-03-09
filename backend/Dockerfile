@@ -3,14 +3,17 @@
 # ===============
 FROM python:3.12-slim-bookworm AS builder
 
-ARG ENVIRONMENT
+# Use build arguments with defaults
+ARG ENVIRONMENT=development
+
+# Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
-    DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-core.settings}
+    ENVIRONMENT=${ENVIRONMENT}
 
 WORKDIR /app
 
@@ -49,12 +52,13 @@ LABEL maintainer="ALAMIN mdab6488@gmail.com"
 LABEL description="Django backend for DjangoAllauth application"
 LABEL version="1.0.0"
 
+# Use environment variables with defaults
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
     PATH="/opt/venv/bin:$PATH" \
-    PYTHONPATH="/app"
+    PYTHONPATH="/app" 
 
 WORKDIR /app
 
@@ -96,9 +100,10 @@ RUN mkdir -p /app/media /app/logs && \
 # Switch to non-root user
 USER appuser
 
-# Expose application port
+# Expose dynamic port
 EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--worker-class", "gthread", "--threads", "2", "--timeout", "240", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "core.wsgi:application"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+# Update CMD to use the dynamic port
+CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:8000"]

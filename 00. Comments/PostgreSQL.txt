@@ -1,0 +1,16 @@
+# Connect to PostgreSQL container
+docker exec -it DjangoAllauth_postgres bash
+
+# Connect to PostgreSQL with a user that works (likely the default user defined when container was created)
+psql -U postgres -d djangoallauth_db
+
+# Once connected, list users
+\du
+
+docker exec -it DjangoAllauth_postgres bash
+
+docker exec -it DjangoAllauth_postgres psql -U postgres
+
+ALTER USER postgres WITH PASSWORD 'postgres';
+
+docker exec -it DjangoAllauth_postgres psql -h postgres -U postgres -d djangoallauth_db

@@ -129,7 +129,7 @@ WORKDIR /app
 # Set environment variables
 ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
+ENV FRONTEND_PORT=${FRONTEND_PORT}
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -159,12 +159,12 @@ RUN npm ci
 # Copy application code (will be overridden with volumes in dev)
 COPY --chown=nextjs:nodejs . .
 
-# Expose development port
-EXPOSE 3000
+# Expose dynamic port
+EXPOSE ${FRONTEND_PORT}
 
 # Add simple health check for the dev server
 HEALTHCHECK --interval=10s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:3000 || exit 1
+  CMD curl -f http://localhost:${FRONTEND_PORT} || exit 1
 
 # Start development server with hot reloading
 CMD ["npm", "run", "dev"]

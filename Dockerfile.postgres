@@ -1,5 +1,4 @@
-FROM postgres:17-alpine
+FROM postgres:15
 
-RUN apk add --no-cache libc6-compat
-
-CMD ["postgres"]
+# No custom initialization needed - using the default postgres setup
+# This will ensure the postgres user has the right permissions automatically

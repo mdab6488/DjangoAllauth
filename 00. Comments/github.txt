@@ -5,5 +5,5 @@ git config http.postBuffer 524288000
 git remote -v
 git add .
 git branch
-git commit -m "DjangoAllauth_postgres & DjangoAllauth_backend is working"
+git commit -m "07-03-2025"
 git push --force origin main

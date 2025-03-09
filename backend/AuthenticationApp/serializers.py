@@ -15,8 +15,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'password2', 
-                 'first_name', 'last_name', 'avatar', 'bio')
+        fields = ('id', 'email', 'password', 'password2', 
+                 'first_name', 'last_name', 'avatar', 'bio')  # Removed username
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True}
@@ -29,8 +29,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')
-        return User.objects.create_user(**validated_data)
-
+        user = User.objects.create_user(**validated_data)
+        return user
+    
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

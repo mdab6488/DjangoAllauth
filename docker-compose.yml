@@ -18,6 +18,12 @@ x-logging: &logging-config
       max-size: "10m"
       max-file: "3"
 
+x-security-opts: &security-opts
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
 services:
   postgres:
     build:
@@ -29,11 +35,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT}:5432"  # Only bind to localhost for security
     volumes:
-      - nginx_logs_volume:/var/log/nginx
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d:ro
     networks:
@@ -42,19 +46,30 @@ services:
           - database
           - postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
       interval: 10s
       timeout: 10s
       retries: 10
       start_period: 60s
-    <<: [*resource-limits, *logging-config]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        - ENVIRONMENT=${ENVIRONMENT:-development} # Default to "development" if not set
+        - ENVIRONMENT=${ENVIRONMENT}
     container_name: DjangoAllauth_backend
     restart: unless-stopped
     volumes:
@@ -63,34 +78,40 @@ services:
       - media_volume:/app/media
       - logs_volume:/app/logs
     ports:
-      - "${BACKEND_PORT:-8000}:8000" # Use BACKEND_PORT from .env or default to 8000
+      - "127.0.0.1:${BACKEND_PORT}:8000" # Use BACKEND_PORT from .env or default to 8000, bind to localhost only
     environment:
-      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
-      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - CORS_ORIGIN_WHITELIST=${CORS_ORIGIN_WHITELIST}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
-      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-core.settings}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - DATABASE_URL=${DATABASE_URL}
       - LOG_DIR=/app/logs
+      - COLLECT_STATIC=true
+      - CHECK_APP_HEALTH=true
     networks:
       DjangoAllauth_network:
         aliases:
-          - database
-          - postgres
+          - backend
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     command: >
       sh -c "
         mkdir -p /app/logs &&
-        /usr/local/bin/wait-for-it.sh postgres:5432 --timeout=40 --strict &&
+        /usr/local/bin/wait-for-it.sh postgres:${POSTGRES_PORT} --timeout=40 --strict &&
         python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        exec gunicorn --bind 0.0.0.0:8000 --timeout 240 core.wsgi:application"
+        exec python manage.py runserver 0.0.0.0:8000"
     <<: [*resource-limits, *logging-config, *env-config]
 
   frontend:
@@ -98,27 +119,35 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NODE_ENV=${NODE_ENV:-development}
-      target: development
+        - NODE_ENV=${NODE_ENV}
+      target: ${NODE_ENV:-development}
     container_name: DjangoAllauth_frontend
     restart: unless-stopped
     volumes:
-      - ./frontend:/app  # Changed from ./ to ./frontend to match the context
+      - ${DEVELOPMENT_MODE:+./frontend:/app}  # Only mount in development mode
       - node_modules:/app/node_modules
       - next_cache:/app/.next
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"  # Only bind to localhost for security
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+      - CHOKIDAR_USEPOLLING=${DEVELOPMENT_MODE:+true}
+      - WATCHPACK_POLLING=${DEVELOPMENT_MODE:+true}
     networks:
       - DjangoAllauth_network
     stdin_open: true
     tty: true
-    <<: [*resource-limits, *logging-config, *env-config]
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - backend
+    <<: [*resource-limits, *logging-config, *env-config, *security-opts]
 
   nginx:
     build:
@@ -134,12 +163,13 @@ services:
       - media_volume:/app/media:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl
+      - nginx_logs_volume:/var/log/nginx
     entrypoint: ["/bin/sh", "-c"]
     environment:
       - BACKEND_HOST=backend
-      - BACKEND_PORT=8000
+      - BACKEND_PORT=${BACKEND_PORT}
       - FRONTEND_HOST=frontend
-      - FRONTEND_PORT=3000
+      - FRONTEND_PORT=${FRONTEND_PORT}
     command:
       - |
         if [ ! -f /etc/nginx/ssl/nginx-selfsigned.crt ]; then
@@ -150,11 +180,18 @@ services:
         fi
         exec nginx -g "daemon off;"
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
     networks:
       - DjangoAllauth_network
-    <<: [*resource-limits, *logging-config]
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    <<: [*resource-limits, *logging-config, *security-opts]
 
 networks:
   DjangoAllauth_network:
@@ -169,11 +206,6 @@ networks:
 volumes:
   postgres_data:
     name: DjangoAllauth_postgres_data
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./postgres_data
   static_volume:
     name: DjangoAllauth_static_volume
   media_volume:

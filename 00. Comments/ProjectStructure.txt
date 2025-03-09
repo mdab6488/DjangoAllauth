@@ -118,8 +118,9 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   ├── error.log                 # 
 │   ├── conf.d/                       # 
 │   │   ├── dhparam.pem               # 
-│   │   ├── fullchain.pem             # 
-│   │   ├── privkey.pem               # 
+│   │   ├── nginx-selfsigned.crt      # 
+│   │   ├── nginx-selfsigned.csr      # 
+│   │   ├── nginx-selfsigned.key      # 
 │   ├── Dockerfile                    # 
 │
 ├── postgres/                            

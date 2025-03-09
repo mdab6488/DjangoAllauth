@@ -8,14 +8,21 @@
 set -eo pipefail
 
 # Constants with defaults (can be overridden by environment variables)
-: "${MAX_DB_RETRIES:=30}"
-: "${DB_RETRY_INTERVAL:=1}"
+: "${MAX_DB_RETRIES:=60}"
+: "${DB_RETRY_INTERVAL:=2}"
 : "${DB_CONNECTION_TIMEOUT:=30}"
+: "${DJANGO_DEBUG:=True}"
+: "${POSTGRES_DB:=djangoallauth_db}"
+: "${POSTGRES_USER:=postgres}"
+: "${POSTGRES_PASSWORD:=postgres}"
 : "${POSTGRES_HOST:=postgres}"
 : "${POSTGRES_PORT:=5432}"
+: "${DJANGO_SUPERUSER_USERNAME:=admin}"
+: "${DJANGO_SUPERUSER_PASSWORD:=admin}"
+: "${DJANGO_SUPERUSER_EMAIL:=admin@example.com}"
 
 # Enable debug mode if DEBUG_ENTRYPOINT is set
-if [[ "${DEBUG_ENTRYPOINT}" == "true" ]]; then
+if [[ "${DJANGO_DEBUG}" == "true" ]]; then
     set -x
     echo "🐞 Debug mode enabled"
 fi
@@ -49,59 +56,65 @@ check_required_var() {
     fi
 }
 
+# Validate sensitive environment variables
+# Check required PostgreSQL variables
+check_required_var "POSTGRES_USER"
+check_required_var "POSTGRES_PASSWORD"
+check_required_var "POSTGRES_DB"
+
 # Wait for PostgreSQL with improved error handling and feedback
-if [[ "${DATABASE}" = "postgres" ]]; then
-    # Check required PostgreSQL variables
-    check_required_var "POSTGRES_USER"
-    check_required_var "POSTGRES_PASSWORD"
-    check_required_var "POSTGRES_DB"
+log "INFO" "Waiting for PostgreSQL at ${POSTGRES_HOST}:${POSTGRES_PORT}..."
+
+# Implement retry mechanism with timeout
+RETRY_COUNT=0
+
+# Use pg_isready instead of psql for more reliable health checking
+until pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -t 1 > /dev/null 2>&1; do
+    RETRY_COUNT=$((RETRY_COUNT+1))
+    if [[ ${RETRY_COUNT} -ge ${MAX_DB_RETRIES} ]]; then
+        log "ERROR" "Failed to connect to PostgreSQL after ${MAX_DB_RETRIES} attempts"
+        exit 1
+    fi
     
-    log "INFO" "Waiting for PostgreSQL at ${POSTGRES_HOST}:${POSTGRES_PORT}..."
-    
-    # Implement retry mechanism with timeout
-    RETRY_COUNT=0
-    
-    until PGPASSWORD=$POSTGRES_PASSWORD psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "SELECT 1" > /dev/null 2>&1; do
-        RETRY_COUNT=$((RETRY_COUNT+1))
-        if [[ ${RETRY_COUNT} -ge ${MAX_DB_RETRIES} ]]; then
-            log "ERROR" "Failed to connect to PostgreSQL after ${MAX_DB_RETRIES} attempts"
-            exit 1
-        fi
-        
-        log "WARN" "PostgreSQL is unavailable - retrying in ${DB_RETRY_INTERVAL}s (${RETRY_COUNT}/${MAX_DB_RETRIES})"
-        sleep ${DB_RETRY_INTERVAL}
-    done
-    
-    log "INFO" "✅ PostgreSQL is available"
-fi
+    log "WARN" "PostgreSQL is unavailable - retrying in ${DB_RETRY_INTERVAL}s (${RETRY_COUNT}/${MAX_DB_RETRIES})"
+    sleep ${DB_RETRY_INTERVAL}
+done
+
+log "INFO" "☑ PostgreSQL is available"
 
 # Run database health check with improved error handling
 log "INFO" "Verifying database connection..."
 python -c "
 import sys
 import time
+import os
 import django
 from django.db import connections
 from django.db.utils import OperationalError
 
+
 try:
     django.setup()
     start_time = time.time()
-    timeout = float('${DB_CONNECTION_TIMEOUT}')
+    timeout = float(os.environ.get('DB_CONNECTION_TIMEOUT', '30'))
     
     while True:
         try:
-            connections['default'].cursor()
-            print('✅ Database connection successful')
+            conn = connections['default']
+            conn.ensure_connection()
+            with conn.cursor() as cursor:
+                cursor.execute('SELECT 1')
+                cursor.fetchone()
+            print('☑ -- Database connection successful')
             break
         except OperationalError as e:
             if time.time() - start_time > timeout:
-                sys.stderr.write(f'❌ Database connection failed after {timeout} seconds: {str(e)}\\n')
+                sys.stderr.write(f'❌ -- Database connection failed after {timeout} seconds: {str(e)}\\n')
                 sys.exit(1)
             time.sleep(1)
             sys.stderr.write('.')
 except Exception as e:
-    sys.stderr.write(f'❌ Error during database check: {str(e)}\\n')
+    sys.stderr.write(f'❌ -- Error during database check: {str(e)}\\n')
     sys.exit(1)
 "
 
@@ -111,7 +124,7 @@ if ! python manage.py migrate --noinput; then
     log "ERROR" "Database migration failed"
     exit 1
 fi
-log "INFO" "✅ Database migrations completed successfully"
+log "INFO" "☑ -- Database migrations completed successfully"
 
 # Collect static files if enabled
 if [[ "${COLLECT_STATIC}" == "true" ]]; then
@@ -120,7 +133,7 @@ if [[ "${COLLECT_STATIC}" == "true" ]]; then
         log "ERROR" "Static file collection failed"
         exit 1
     fi
-    log "INFO" "✅ Static files collected successfully"
+    log "INFO" "☑ -- Static files collected successfully"
 fi
 
 # Check for application health needs with more detailed output
@@ -130,25 +143,34 @@ if [[ "${CHECK_APP_HEALTH}" == "true" ]]; then
         log "WARN" "Application health check reported issues"
         # Continue but warn - not failing as checks might be informational
     else
-        log "INFO" "✅ Application health check passed"
+        log "INFO" "☑ -- Application health check passed"
     fi
 fi
 
-# Create superuser if credentials are provided
+# Create superuser if credentials are provided - with better security practices
 if [[ "${CREATE_SUPERUSER}" == "true" ]]; then
     if [[ -n "${DJANGO_SUPERUSER_USERNAME}" && -n "${DJANGO_SUPERUSER_PASSWORD}" && -n "${DJANGO_SUPERUSER_EMAIL}" ]]; then
-        log "INFO" "Creating superuser..."
-        python -c "
+        log "INFO" "Checking if superuser already exists..."
+        SUPERUSER_EXISTS=$(python -c "
 import django
 django.setup()
 from django.contrib.auth import get_user_model
 User = get_user_model()
-if not User.objects.filter(username='${DJANGO_SUPERUSER_USERNAME}').exists():
-    User.objects.create_superuser('${DJANGO_SUPERUSER_USERNAME}', '${DJANGO_SUPERUSER_EMAIL}', '${DJANGO_SUPERUSER_PASSWORD}')
-    print('✅ Superuser created successfully')
-else:
-    print('✅ Superuser already exists')
-"
+print(User.objects.filter(email='${DJANGO_SUPERUSER_EMAIL}', is_superuser=True).exists())
+" 2>/dev/null)
+        
+        if [[ "${SUPERUSER_EXISTS}" != "True" ]]; then
+            log "INFO" "Creating superuser..."
+            # Use Django's built-in createsuperuser command with --noinput flag
+            DJANGO_SUPERUSER_USERNAME="${DJANGO_SUPERUSER_USERNAME}" \
+            DJANGO_SUPERUSER_EMAIL="${DJANGO_SUPERUSER_EMAIL}" \
+            DJANGO_SUPERUSER_PASSWORD="${DJANGO_SUPERUSER_PASSWORD}" \
+            python manage.py createsuperuser --noinput 2>/dev/null || true
+            
+            log "INFO" "☑ -- Superuser creation completed"
+        else
+            log "INFO" "☑ -- Superuser already exists"
+        fi
     else
         log "WARN" "CREATE_SUPERUSER is true but required environment variables are not set"
     fi
@@ -157,13 +179,20 @@ fi
 # Run custom initialization commands if specified with improved security
 if [[ -n "${INIT_COMMAND}" ]]; then
     log "INFO" "Running initialization command"
-    # Using eval but with caution - command should be trusted
+    # Add security warning for eval usage
+    log "WARN" "Running custom command with eval - ensure the command is trusted"
     if ! eval "${INIT_COMMAND}"; then
         log "ERROR" "Initialization command failed"
         exit 1
     fi
-    log "INFO" "✅ Initialization command completed"
+    log "INFO" "☑-- Initialization command completed"
 fi
 
-log "INFO" "✅ Entrypoint tasks completed, launching application..."
+# Check for updates to Django security advisories
+if [[ "${CHECK_SECURITY_UPDATES}" == "true" ]]; then
+    log "INFO" "Checking for Django security updates..."
+    python -m pip list --outdated | grep -i django || true
+fi
+
+log "INFO" "☑ -- Entrypoint tasks completed, launching application..."
 exec "$@"

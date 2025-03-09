@@ -23,6 +23,12 @@ docker-compose build --no-cache postgres
 docker-compose up -d --no-deps postgres
 docker exec -it DjangoAllauth_postgres pg_ctl stop -m fast
 
+====================================
+docker-compose build postgres
+docker-compose down -v
+docker-compose up
+====================================
+
 docker-compose exec postgres psql -U $auth_user -d $auth_password -c "SELECT pg_database.datname FROM pg_database;"
 
 docker-compose build --no-cache nginx
