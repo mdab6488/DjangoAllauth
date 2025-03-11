@@ -1,93 +1,40 @@
 docker-compose up --build -d
-
-1️⃣ Quick Restart (Without Rebuilding Everything)
-If your changes are mostly configurations, environment variables, or minor updates, run:
-
 docker-compose up -d
-This will restart only the affected services without rebuilding all images.
-
-2️⃣ Partial Rebuild (Only for Updated Services)
-If you made code changes in the backend or frontend, but not in dependencies (like requirements.txt or package.json), then:
-
-docker-compose up -d --no-deps --build frontend
-docker-compose up -d --no-deps --build backend
-This will only rebuild the backend and frontend without touching PostgreSQL or other services.
-
-docker-compose build --no-cache frontend
-docker-compose up -d --no-deps frontend
-
-docker-compose build --no-cache backend
-docker-compose up -d --no-deps backend
 
 docker-compose build --no-cache postgres
 docker-compose up -d --no-deps postgres
-docker exec -it DjangoAllauth_postgres pg_ctl stop -m fast
-
-====================================
-docker-compose build postgres
-docker-compose down -v
-docker-compose up
-
-docker logs DjangoAllauth_postgres
-docker-compose exec backend env
-docker-compose exec postgres printenv SSL_CERT
-====================================
-
-docker-compose exec postgres psql -U $auth_user -d $auth_password -c "SELECT pg_database.datname FROM pg_database;"
 
 docker-compose build --no-cache nginx
 docker-compose up -d --no-deps nginx
 
-3️⃣ Full Rebuild (If You Changed Dependencies or Installed New Packages)
-If you updated:
+docker-compose build --no-cache backend
+docker-compose up -d --no-deps backend
 
-requirements.txt (for Python dependencies)
-package.json (for frontend dependencies)
-Then, you need a full rebuild:
-
-docker-compose up -d --build
-This will rebuild everything but keep your volumes and database intact.
-
-4️⃣ Stop and Restart Everything Cleanly (If Needed)
-If something is still not working, do:
-
+docker-compose build --no-cache frontend
+docker-compose up -d --no-deps frontend
+===================================================================================================================================
 docker-compose down
-docker-compose up -d --build
-This will: ✅ Stop and remove all containers
-✅ Rebuild everything
-✅ Restart your services
+docker-compose down -v
 
-Bonus: Check Logs
-After running the commands, check if everything is running smoothly:
+docker logs DjangoAllauth_postgres
+docker-compose exec backend env
+docker-compose exec postgres printenv POSTGRES_HOST
 
 docker-compose logs -f
-It will show you real-time logs from all services.
+===================================================================================================================================
+docker network ls
+docker network inspect DjangoAllauth_network
+ping postgres
+        'HOST': 'DjangoAllauth_postgres',  # Change from 'postgres' to the actual container name
+POSTGRES_HOST=DjangoAllauth_postgres
 
-docker build --no-cache -t frontend .
-
-DOCKER_BUILDKIT=1 docker-compose up -d --no-deps --build frontend
-If you have Git Bash, WSL (Windows Subsystem for Linux), or another Unix-like shell installed, you can run the original command as-is:
-
-$Env:DOCKER_BUILDKIT = "1"; docker-compose up -d --no-deps --build frontend
-For PowerShell, I recommend Option 1 as it’s clean and aligns with PowerShell conventions:
-
-
-docker system prune -f
-    Total reclaimed space: 6.616GB
-docker system prune -a --volumes
-    Total reclaimed space: 4.609GB
-
-docker-compose exec backend env | grep POSTGRES_HOST
-POSTGRES_HOST=db
-
-cat .env | grep POSTGRES_HOST
-POSTGRES_HOST=postgres
-
-docker-compose --env-file .env restart backend
-
-docker-compose exec backend sh -c "export POSTGRES_HOST=postgres && python manage.py migrate"
-
-- ./.env:/app/.env
+🛠 Why This Happens?
+    When using Docker, containers communicate via service names (not localhost or 127.0.0.1).
+    Your PostgreSQL container name is DjangoAllauth_postgres, so Django must use this exact name as the database host.
+    Running ping postgres fails because there’s no container with that name.
+===================================================================================================================================
 
 
-docker exec -it DjangoAllauth_backend bash
+
+
+

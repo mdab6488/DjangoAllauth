@@ -28,7 +28,4 @@ class IsNotLocked(BasePermission):
         if not hasattr(request.user, 'account_locked_until'):
             return True
             
-        if request.user.account_locked_until and request.user.account_locked_until > timezone.now():
-            return False
-            
-        return True
+        return not (request.user.account_locked_until and request.user.account_locked_until > timezone.now())

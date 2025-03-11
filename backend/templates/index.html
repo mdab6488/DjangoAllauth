@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureAuth API</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #4f46e5;
+            --surface: rgba(255, 255, 255, 0.95);
+            --background: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            display: grid;
+            place-items: center;
+        }
+
+        .glass-panel {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 2.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-grid {
+            display: grid;
+            gap: 1.2rem;
+        }
+
+        .service-card {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 1.5rem;
+            background: white;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #334155;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .service-card:hover {
+            background: #f8fafc;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+            transform: translateX(8px);
+        }
+
+        .service-card:active {
+            transform: translateX(4px);
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .card-content {
+            text-align: left;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-description {
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .glass-panel {
+                padding: 2rem 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-panel">
+        <h1>SecureAuth API Portal</h1>
+        <div class="nav-grid">
+            <a href="/api/swagger/" class="service-card">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <div class="card-content">
+                    <div class="card-title">API Documentation</div>
+                    <div class="card-description">Explore endpoints with Swagger UI</div>
+                </div>
+            </a>
+
+            <a href="/admin/" class="service-card">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <div class="card-content">
+                    <div class="card-title">Admin Dashboard</div>
+                    <div class="card-description">Manage users and permissions</div>
+                </div>
+            </a>
+
+            <a href="/api/auth/" class="service-card">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                <div class="card-content">
+                    <div class="card-title">API Endpoints</div>
+                    <div class="card-description">Direct access to authentication services</div>
+                </div>
+            </a>
+
+            <a href="/api/redoc/" class="service-card">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                <div class="card-content">
+                    <div class="card-title">API Redoc</div>
+                    <div class="card-description">Explore endpoints with Redoc</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

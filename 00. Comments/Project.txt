@@ -110,3 +110,14 @@ Docker for containerization
 For development → Keep depends_on.
 For production → Remove it & rely on Nginx failover logic.
 
+nginx:
+  # ...existing configuration...
+  volumes:
+    # ...existing volumes...
+    - letsencrypt_data:/etc/letsencrypt
+  # Add certbot command...
+
+volumes:
+  # ...existing volumes...
+  letsencrypt_data:
+    name: DjangoAllauth_letsencrypt_data

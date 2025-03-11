@@ -92,6 +92,10 @@ RUN chmod +x /usr/local/bin/wait-for-it.sh
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
+# Make entrypoint script executable
+COPY generate-certs.sh /app/generate-certs.sh
+RUN chmod +x /app/generate-certs.sh
+
 # Create and configure directories with proper permissions
 RUN mkdir -p /app/media /app/logs && \
     chown -R appuser:appgroup /app/media /app/logs /app/static && \

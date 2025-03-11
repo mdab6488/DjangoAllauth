@@ -19,14 +19,18 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   ├── asgi.py                    # ASGI entry point for asynchronous server deployment
 │   │   ├── settings.py                # Core Django settings (e.g., database, middleware, allauth config)
 │   │   ├── urls.py                    # Root URL configuration, mapping routes to apps
+│   │   ├── views.py                    # 
 │   │   ├── wsgi.py                    # WSGI entry point for traditional server deployment
 │   ├── env/                           # Stores environment-specific files (e.g., local .env)
 │   ├── logs/                          # 
 │   ├── media/                         # Directory for user-uploaded files (e.g., profile pictures)
 │   ├── static/                        # Collected static files for production deployment
+│   ├── templates/
+│   │   ├── index.html                    # 
 │   ├── .dockerignore                  # Specifies files to exclude from Docker builds (e.g., .git)
 │   ├── Dockerfile                     # Defines the Docker image for the Django backend
 │   ├── entrypoint.sh                  # 
+│   ├── generate-certs.sh              # 
 │   ├── manage.py                      # Django CLI script for managing the project
 │   ├── requirements.txt               # Lists Python dependencies (e.g., Django, djangorestframework)
 │   ├── wait-for-it.sh                 # 
@@ -116,12 +120,13 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   ├── logs/                         # 
 │   │   ├── access.log                # 
 │   │   ├── error.log                 # 
-│   ├── conf.d/                       # 
+│   ├── ssl/                       # 
 │   │   ├── dhparam.pem               # 
 │   │   ├── nginx-selfsigned.crt      # 
 │   │   ├── nginx-selfsigned.csr      # 
 │   │   ├── nginx-selfsigned.key      # 
 │   ├── Dockerfile                    # 
+│   ├── entrypoint.sh
 │
 ├── postgres/                            
 │   ├── initdb.d/                       

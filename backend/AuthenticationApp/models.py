@@ -59,6 +59,16 @@ class User(AbstractUser):
         }
     )
     
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    
+    # Security and account status fields (added)
+    is_email_verified = models.BooleanField(default=False)
+    failed_login_attempts = models.PositiveIntegerField(default=0)
+    last_failed_login = models.DateTimeField(null=True, blank=True)
+    account_locked_until = models.DateTimeField(null=True, blank=True)
+    last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    
     # Define email as the username field
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  # Remove 'username' from required fields
@@ -75,55 +85,83 @@ class User(AbstractUser):
         choices=[(tz, tz) for tz in sorted(getattr(settings, 'TIMEZONE_CHOICES', [settings.TIME_ZONE]))]
     )
     
-        # Improved timezone field with proper choices
-    timezone = models.CharField(
-        _('timezone'),
-        max_length=50,
-        default=settings.TIME_ZONE,
-        # Generate choices from pytz or zoneinfo
-        choices=[(tz, tz) for tz in sorted(getattr(settings, 'TIMEZONE_CHOICES', [settings.TIME_ZONE]))]
-    )
-    
     def _reset_failed_attempts_if_needed(self, now):
         """Reset failed attempts count if last attempt was more than 24 hours ago."""
         if self.last_failed_login and (now - self.last_failed_login).total_seconds() > 24 * 3600:
             self.failed_login_attempts = 0
             self.save(update_fields=['failed_login_attempts'])
 
+    def _handle_failed_login_attempt(self, now):
+        """Handle a failed login attempt."""
+        self.failed_login_attempts += 1
+        self._update_failed_login_attempt(now)
+
     # Improved login attempt tracking with rate limiting
-    def record_login_attempt(self, success: bool, ip_address: str = None):
-        """
-        Record a login attempt and handle account locking with progressive timeouts.
+def record_login_attempt(self, success: bool, ip_address: str = None):
+    """
+    Record a login attempt and handle account locking with progressive timeouts.
+    
+    Args:
+        success (bool): Whether the login attempt was successful
+        ip_address (str, optional): The IP address of the login attempt
+    """
+    now = timezone.now()
+    
+    if success:
+        # Reset counter and record successful login
+        self.failed_login_attempts = 0
+        self.last_login = now
+        if ip_address:
+            self.last_login_ip = ip_address
+        self.save(update_fields=['failed_login_attempts', 'last_login', 'last_login_ip'])
+    else:
+        # Handle failed login
+        self._reset_failed_attempts_if_needed(now)
+        self.failed_login_attempts += 1
+        self.last_failed_login = now
         
-        Args:
-            success (bool): Whether the login attempt was successful
-            ip_address (str, optional): The IP address of the login attempt
-        """
-        if success:
-            now = timezone.now()
-            self.failed_login_attempts = 0
-            self._reset_failed_attempts_if_needed(now)
-            self._handle_failed_login_attempt(now)
-            self.last_login = now
-            self.account_locked_until = None
-            self.save(update_fields=['failed_login_attempts', 'last_login_ip', 'last_login', 'account_locked_until'])
-            self._handle_failed_login_attempt(now)
-            self.last_failed_login = now
+        # Progressive lockout periods based on number of failed attempts
+        if self.failed_login_attempts >= 10:
+            lockout_minutes = 24 * 60  # 24 hours
+        elif self.failed_login_attempts >= 5:
+            lockout_minutes = 30
+        elif self.failed_login_attempts >= 3:
+            lockout_minutes = 15
+        else:
+            lockout_minutes = 0
             
-            # Progressive lockout periods based on number of failed attempts
-            if self.failed_login_attempts >= 10:
-                lockout_minutes = 24 * 60  # 24 hours
-            elif self.failed_login_attempts >= 5:
-                lockout_minutes = 30
-            elif self.failed_login_attempts >= 3:
-                lockout_minutes = 15
-            else:
-                lockout_minutes = 0
-                
+        if lockout_minutes > 0:
+            self.account_locked_until = now + timezone.timedelta(minutes=lockout_minutes)
+        
+        if ip_address:
+            self.last_login_ip = ip_address
+            
+        self.save(update_fields=['failed_login_attempts', 'last_failed_login', 
+                               'account_locked_until', 'last_login_ip'])
+    
+    def _update_failed_login_attempt(self, now):
+        """Update failed login attempt details."""
+        self.last_failed_login = now
+        
+        # Progressive lockout periods based on number of failed attempts
+        if self.failed_login_attempts >= 10:
+            lockout_minutes = 24 * 60  # 24 hours
+        elif self.failed_login_attempts >= 5:
+            lockout_minutes = 30
+        elif self.failed_login_attempts >= 3:
+            lockout_minutes = 15
+        else:
+            lockout_minutes = 0
+            
+        if lockout_minutes > 0:
+            self.account_locked_until = now + timezone.timedelta(minutes=lockout_minutes)
+        
+            self._update_failed_login_attempt(now)
             if lockout_minutes > 0:
                 self.account_locked_until = now + timezone.timedelta(minutes=lockout_minutes)
             
             self.save(update_fields=['failed_login_attempts', 'last_failed_login', 'account_locked_until'])
+
 class UserSessionManager(models.Manager):
     """Manager for UserSession model."""
     

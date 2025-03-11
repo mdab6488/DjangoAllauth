@@ -21,4 +21,26 @@ openssl req -new -key nginx-selfsigned.key -out nginx-selfsigned.csr -subj "//CN
 openssl x509 -req -days 365 -in nginx-selfsigned.csr -signkey nginx-selfsigned.key -out nginx-selfsigned.crt
 
 # Generate DH parameters
-openssl dhparam -out dhparam.pem 2048
+openssl dhparam -out dhparam.pem 
+
+
+====================================================
+For Production (Trusted Certificates):
+Replace self-signed certificates with Let's Encrypt certificates (via Certbot).
+
+Modify your Nginx config to work with Certbot:
+
+nginx
+Copy
+# In your default.conf
+server {
+  listen 80;
+  server_name yourdomain.com;
+  location /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+  }
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+Use a Docker Certbot setup to automate renewal.

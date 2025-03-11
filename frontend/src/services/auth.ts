@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { AuthResponse, User } from '../types';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || '/api/v1/auth/';
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const axiosInstance = axios.create({
   baseURL,

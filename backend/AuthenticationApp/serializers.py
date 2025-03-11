@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'password', 'password2', 
-                 'first_name', 'last_name', 'avatar', 'bio')  # Removed username
+                 'first_name', 'last_name', 'avatar')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True}
@@ -34,5 +34,5 @@ class UserSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'avatar', 'bio')
+        fields = ('first_name', 'last_name', 'avatar')
         read_only_fields = ('email',)
