@@ -1,26 +1,22 @@
-FROM nginx:latest
+FROM nginx:stable-alpine
 
 # Install dependencies
-RUN apt-get update && apt-get install -y openssl
+RUN apk add --no-cache openssl gettext
 
-# Create directories with proper permissions
-RUN mkdir -p /etc/nginx/ssl \
-    && mkdir -p /var/run/nginx \
-    && mkdir -p /var/cache/nginx \
-    && mkdir -p /etc/nginx/conf.d/template \
-    && chown -R nginx:nginx /var/run/nginx /var/cache/nginx /etc/nginx/ssl /etc/nginx/conf.d
+# Create non-root user and configure directories with an unused GID
+RUN addgroup -g 102 nginxgroup && \
+    adduser -D -u 102 -G nginxgroup nginxuser && \
+    mkdir -p /etc/nginx/ssl /var/cache/nginx /var/run/nginx && \
+    chown -R nginxuser:nginxgroup /etc/nginx /var/cache/nginx /var/run/nginx && \
+    chmod -R 755 /etc/nginx
 
-# Override PID location
-RUN sed -i '/pid\s*\/var\/run\/nginx.pid;/c\pid /tmp/nginx.pid;' /etc/nginx/nginx.conf
+# Copy configurations and entrypoint
+COPY --chown=nginxuser:nginxgroup conf.d/default.conf.template /etc/nginx/conf.d/
+COPY --chown=nginxuser:nginxgroup entrypoint.sh /entrypoint.sh
 
-# Copy configuration template
-COPY conf.d/default.conf /etc/nginx/conf.d/template/default.conf.template
+# Set permissions
+RUN chmod 755 /entrypoint.sh
 
-# Script to be run as entrypoint
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
+USER nginxuser
 EXPOSE 80 443
-
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]

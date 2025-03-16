@@ -2,3 +2,87 @@ python manage.py check
 
 python manage.py runserver
 
+Get-ChildItem -Path . -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+
+
+echo $POSTGRES_DB
+echo $POSTGRES_USER
+echo $POSTGRES_PASSWORD
+echo $POSTGRES_HOST
+echo $POSTGRES_PORT
+echo $DATABASE_URL
+
+postgres
+nginx
+
+unset POSTGRES_DB POSTGRES_PASSWORD POSTGRES_USER POSTGRES_HOST POSTGRES_PORT
+
+
+docker exec -it DjangoAllauth_postgres psql -U auth_user -d djangoallauth_db
+
+
+unset DJANGO_SECRET_KEY
+unset DJANGO_DEBUG
+unset DJANGO_ALLOWED_HOSTS
+unset DJANGO_SETTINGS_MODULE
+unset ENVIRONMENT
+unset DEVELOPMENT_MODE
+unset SERVER_NAME
+unset FRONTEND_HOST
+unset FRONTEND_PORT
+unset BACKEND_HOST
+unset BACKEND_PORT
+unset NGX_SSL_DIR
+unset DJANGO_SUPERUSER_USERNAME
+unset DJANGO_SUPERUSER_PASSWORD
+unset DJANGO_SUPERUSER_EMAIL
+unset CORS_ORIGIN_WHITELIST
+unset CSRF_TRUSTED_ORIGINS
+unset POSTGRES_DB
+unset POSTGRES_USER
+unset POSTGRES_PASSWORD
+unset POSTGRES_HOST
+unset POSTGRES_PORT
+unset DATABASE_URL
+unset PGADMIN_EMAIL
+unset PGADMIN_DEFAULT_EMAIL
+unset PGADMIN_DEFAULT_PASSWORD
+unset PGADMIN_PASSWORD
+unset REDIS_ARGS
+unset CELERY_BROKER_URL
+unset CELERY_RESULT_BACKEND
+unset SSL_CERT
+unset SSL_KEY
+unset EMAIL_BACKEND
+unset EMAIL_HOST
+unset EMAIL_PORT
+unset EMAIL_USE_TLS
+unset EMAIL_HOST_USER
+unset EMAIL_HOST_PASSWORD
+unset EMAIL_FROM
+unset FRONTEND_URL
+unset NEXT_PUBLIC_SITE_URL
+unset NEXT_PUBLIC_API_URL
+unset DJANGO_API_URL
+unset DJANGO_SECURE_SSL_REDIRECT
+unset DJANGO_SESSION_COOKIE_SECURE
+unset DJANGO_CSRF_COOKIE_SECURE
+unset SENTRY_DSN
+unset NODE_ENV
+unset LOG_DIR
+unset COLLECT_STATIC
+unset CHECK_APP_HEALTH
+unset CREATE_SUPERUSER
+unset CHOKIDAR_USEPOLLING
+unset WATCHPACK_POLLING
+
+
+set -a  # Automatically export all variables
+source .env
+set +a
+echo $POSTGRES_DB  # Now returns "djangoallauth_db"
+
+
+export -n POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD POSTGRES_HOST POSTGRES_PORT
+
+printenv | grep POSTGRES

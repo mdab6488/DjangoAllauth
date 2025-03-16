@@ -121,3 +121,17 @@ volumes:
   # ...existing volumes...
   letsencrypt_data:
     name: DjangoAllauth_letsencrypt_data
+
+
+
+Check Email Configuration:
+Update settings.py to use SMTP for emails in production:
+
+python
+Copy
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'your-smtp-server.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@domain.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'

@@ -10,13 +10,18 @@ class UserSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
+    
+    username = serializers.CharField(
+        required=False,  # Make username optional
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+    
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'password', 'password2', 
-                 'first_name', 'last_name', 'avatar')
+        fields = ('id', 'email', 'username', 'password', 'password2', 'first_name', 'last_name', 'avatar')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True}

@@ -1,6 +1,12 @@
 docker-compose.yml                      : 
-DjangoAllauth_frontend                  : 
-DjangoAllauth_postgres                  : OK
-DjangoAllauth_backend                   : OK
-frontend                                : 
-nginx                                   : 
+DjangoAllauth_postgres                  : PostgreSQL init process complete; ready for start up.
+DjangoAllauth_redis                     : * Ready to accept connections tcp
+DjangoAllauth_pgadmin                   : ok
+DjangoAllauth_nginx                     : ok
+DjangoAllauth_backend                   :
+DjangoAllauth_celery-worker             :
+DjangoAllauth_flower                    :
+DjangoAllauth_frontend                  :
+
+==================================================================================
+

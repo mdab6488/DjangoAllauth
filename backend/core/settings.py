@@ -10,12 +10,12 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent  # Preferred over os.path for cross-platform compatibility
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'kaVtCnJ8gK_fNg3DI12gxjBRpT3AwgUibA2MgIkERD15wDgFFwyL7t7AafTcyw_wsOc')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'kaVtCnJ8gK_fNg3DI12gxjBRpT3AwgUibA2MgIkERD15wDgFFwyL7t7AafTcyw_wsOc')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -61,12 +61,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # CORS Configuration
 
-CORS_ORIGIN_WHITELIST = os.environ.get('CORS_ORIGIN_WHITELIST', 'localhost:8000').split(',')
+CORS_ORIGIN_WHITELIST = os.getenv('CORS_ORIGIN_WHITELIST', 'localhost:8000').split(',')
 
-CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True'
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True'
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',') if origin.strip()]
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',') if origin.strip()]
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',') if origin.strip()]
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',') if origin.strip()]
 
 
 TEMPLATES = [
@@ -95,11 +95,11 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'djangoallauth_db'),
-        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),  # Use localhost instead of postgres
-        'PORT': os.environ.get('POSTGRES_PORT', '5432'),        
+        'NAME': os.getenv('POSTGRES_DB', 'djangoallauth_db'),
+        'USER': os.getenv('POSTGRES_USER', 'auth_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'alamin786'),
+        'HOST': os.getenv('POSTGRES_HOST', 'DjangoAllauth_postgres'),  # Use localhost instead of postgres
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),        
         
         
     }
@@ -124,6 +124,9 @@ SECURE_SSL_REDIRECT = False  # Nginx handles redirection
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
 # Rest Framework settings
 REST_FRAMEWORK = {

@@ -1,20 +1,35 @@
 docker-compose up --build -d
 docker-compose up -d
 
+-----------------------------------------------------------------------------------------------------------------------------------
 docker-compose build --no-cache postgres
 docker-compose up -d --no-deps postgres
-
-docker-compose build --no-cache nginx
-docker-compose up -d --no-deps nginx
-
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose up -d --no-deps redis
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose up -d --no-deps pgadmin
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose build --no-cache celery-worker
+docker-compose up -d --no-deps celery-worker
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose build --no-cache flower
+docker-compose up -d --no-deps flower
+-----------------------------------------------------------------------------------------------------------------------------------
 docker-compose build --no-cache backend
 docker-compose up -d --no-deps backend
 
+docker-compose exec backend python manage.py makemigrations
+docker-compose exec backend python manage.py migrate
+-----------------------------------------------------------------------------------------------------------------------------------
 docker-compose build --no-cache frontend
 docker-compose up -d --no-deps frontend
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose build --no-cache nginx
+docker-compose up -d --no-deps nginx
 ===================================================================================================================================
 docker-compose down
 docker-compose down -v
+
 
 docker logs DjangoAllauth_postgres
 docker-compose exec backend env
@@ -34,7 +49,37 @@ POSTGRES_HOST=DjangoAllauth_postgres
     Running ping postgres fails because there’s no container with that name.
 ===================================================================================================================================
 
+docker exec -it DjangoAllauth_postgres psql -U auth_user -c "\du"
+docker exec -it f0e426f8e957 psql -U postgres -d djangoallauth_db -c "DROP ROLE postgres;"
+
+docker exec -it 441c975c0942 psql -U auth_user -c "\l"
 
 
+docker exec -it 645f241325fe psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"
 
 
+wHY I NEED tO SEt auth_user  AS MY database named
+
+docker exec -it DjangoAllauth_postgres psql -U auth_user
+
+===================================================================================================================================
+docker exec -it DjangoAllauth_postgres python manage.py makemigrations
+docker exec -it DjangoAllauth_postgres python manage.py migrate
+
+docker exec -it DjangoAllauth_postgres python manage.py makemigrations AuthenticationApp
+docker exec -it DjangoAllauth_postgres python manage.py migrate
+
+
+docker exec -it DjangoAllauth_postgres psql -U djangoallauth_db -c "\l"
+
+
+===================================================================================================================================
+docker exec -it DjangoAllauth_nginx ls -la /etc/nginx/
+docker exec -it DjangoAllauth_nginx ls -la /etc/nginx/ssl
+===================================================================================================================================
+
+docker exec -it DjangoAllauth_nginx ls -ld /var/cache/nginx
+# Should show ownership by nginxuser:nginxgroup
+
+docker exec -it DjangoAllauth_nginx ps aux
+# Nginx master and worker processes should show running as nginxuser

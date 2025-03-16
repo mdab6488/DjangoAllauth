@@ -23,7 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     libpq-dev \
     curl \
-    git \
     gcc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -37,8 +36,7 @@ RUN pip install --upgrade pip pip-tools
 
 # Install Python dependencies with pip-tools for better dependency management
 COPY requirements.txt .
-RUN pip-compile requirements.txt --output-file requirements.lock --quiet && \
-    pip install -r requirements.lock --no-cache-dir
+RUN pip install -r requirements.txt --no-cache-dir
 
 # Copy application code
 COPY . .
@@ -80,6 +78,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 
+# Create and configure directories with proper permissions
+RUN mkdir -p /app/media /app/logs /app/collected_static
+
 # Copy application code
 COPY --chown=appuser:appgroup . .
 COPY --from=builder --chown=appuser:appgroup /app/static /app/static
@@ -96,10 +97,9 @@ RUN chmod +x /app/entrypoint.sh
 COPY generate-certs.sh /app/generate-certs.sh
 RUN chmod +x /app/generate-certs.sh
 
-# Create and configure directories with proper permissions
-RUN mkdir -p /app/media /app/logs && \
-    chown -R appuser:appgroup /app/media /app/logs /app/static && \
-    chmod -R 755 /app/media /app/logs /app/static
+# Set proper permissions
+RUN chown -R appuser:appgroup /app/media /app/logs /app/collected_static && \
+    chmod -R 755 /app/media /app/logs /app/collected_static
 
 # Switch to non-root user
 USER appuser
@@ -110,4 +110,4 @@ EXPOSE 8000
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Update CMD to use the dynamic port
-CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:8000"]
+CMD ["gunicorn", "--timeout=120", "-b", "0.0.0.0:8000", "core.wsgi:application"]

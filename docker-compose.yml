@@ -25,6 +25,9 @@ x-security-opts: &security-opts
     - ALL
 
 services:
+  # ========================
+  # Independent Services (No Dependencies)
+  # ========================
   postgres:
     build:
       context: .
@@ -36,62 +39,67 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d:ro
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     networks:
       DjangoAllauth_network:
         aliases:
           - database
           - postgres
+    user: "999:999"
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
       interval: 10s
       timeout: 10s
       retries: 10
       start_period: 60s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
-        reservations:
-          memory: 128M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    <<: [*env-config]
-
-  nginx:
-    build:
-      context: ./nginx 
-      dockerfile: Dockerfile
-    container_name: DjangoAllauth_nginx
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
+    
+  redis:
+    image: redis:alpine
+    container_name: DjangoAllauth_redis
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - static_volume:/app/static:ro
-      - media_volume:/app/media:ro
-    environment:
-      - SSL_CERT=/etc/nginx/ssl/nginx-selfsigned.crt
-      - SSL_KEY=/etc/nginx/ssl/nginx-selfsigned.key
-      - BACKEND_PORT=8000  # Add this for variable substitution
-      - FRONTEND_HOST=frontend  # Add this for variable substitution
-    user: root  # Override USER directive from Dockerfile for development
     networks:
       - DjangoAllauth_network
+    volumes:
+      - redis_data:/data
+    # Security adjustment for Redis
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    cap_add:  [SETGID, SETUID, NET_BIND_SERVICE]
+    user: "1000:1000"  # Match your host user ID
     healthcheck:
-      test: ["CMD", "nginx", "-t"]
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+    <<: [*resource-limits, *logging-config, *env-config]
+  # ========================
+  # Database-Dependent Services
+  # Admin services
+  # ========================
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: DjangoAllauth_pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - DjangoAllauth_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
-
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - SETGID
+      - SETUID
+    <<: [*resource-limits, *logging-config, *env-config]  # Remove *security-opts
+  # ========================
+  # Core Application Services
+  # ========================
+  # Application services
   backend:
     build:
       context: ./backend
@@ -101,19 +109,11 @@ services:
     container_name: DjangoAllauth_backend
     restart: unless-stopped
     volumes:
-      - ${DEVELOPMENT_MODE:+./backend:/app} # Mount volume only in development mode
+      - ./backend:/app # Mount volume only in development mode
       - static_volume:/app/collected_static
       - media_volume:/app/media
       - logs_volume:/app/logs
       - ./backend/templates:/app/templates
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
-      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
     ports:
       - "127.0.0.1:${BACKEND_PORT}:8000" # Use BACKEND_PORT from .env or default to 8000, bind to localhost only
     networks:
@@ -123,23 +123,70 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      nginx:
+      redis:
         condition: service_healthy
     entrypoint: ["/app/entrypoint.sh"]
-    command: [
-      "gunicorn",
-      "--timeout=120",
-      "-b", "0.0.0.0:8000",
-      "core.wsgi:application"
-    ]
+    security_opt:
+      - no-new-privileges:true  # Keep this security measure
+    cap_add:  # Add minimal required capabilities
+      - SETPCAP
+      - CHOWN
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s  # Give more time for startup
-    <<: [*resource-limits, *logging-config, *env-config]
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
 
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: DjangoAllauth__celery_worker
+    command: ["celery", "-A", "core", "worker", "--loglevel=info"]
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - DjangoAllauth_network
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME | grep OK"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
+
+  flower:
+    image: mher/flower
+    container_name: DjangoAllauth_flower
+    command: ["flower", "--broker=redis://redis:6379/0", "--port=5555"]
+    ports:
+      - "5555:5555"
+    networks:
+      - DjangoAllauth_network
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5555"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
+
+  # ========================
+  # Frontend & Proxy
+  # Frontend services (depends on backend)
+  # ========================
   frontend:
     build: 
       context: ./frontend
@@ -166,8 +213,39 @@ services:
       retries: 3
       start_period: 40s
     depends_on:
-      - backend
-    <<: [*resource-limits, *logging-config, *env-config, *security-opts]
+      backend:
+        condition: service_healthy
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
+
+  # Web server
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: DjangoAllauth_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/static:ro
+      - media_volume:/app/media:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:rw
+      - ./nginx/ssl:/etc/nginx/ssl:rw
+    user: "102:102"
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - DjangoAllauth_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/healthcheck/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
 
 networks:
   DjangoAllauth_network:
@@ -194,3 +272,5 @@ volumes:
     name: DjangoAllauth_log_volume
   nginx_logs_volume:
     name: DjangoAllauth_nginx_logs_volume
+  redis_data:
+    name: DjangoAllauth_redis_data
