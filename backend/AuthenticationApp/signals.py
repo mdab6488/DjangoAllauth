@@ -1,12 +1,12 @@
 import contextlib
-from datetime import timezone
+from datetime import timedelta
+from django.utils import timezone
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
 import jwt
-from datetime import datetime, timedelta
-from .models import User  # Use relative import
+from .models import User
 
 @receiver(post_save, sender=User)
 def send_verification_email(sender, instance, created, **kwargs):
@@ -15,8 +15,8 @@ def send_verification_email(sender, instance, created, **kwargs):
         token_payload = {
             'user_id': instance.id,
             'email': instance.email,
-            'exp': datetime.now(timezone.utc) + timedelta(days=1),
-            'iat': datetime.now(timezone.utc),
+            'exp': timezone.now() + timedelta(days=1),
+            'iat': timezone.now(),
             'type': 'email_verification'
         }
         

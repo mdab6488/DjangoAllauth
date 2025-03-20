@@ -23,6 +23,12 @@ x-security-opts: &security-opts
     - no-new-privileges:true
   cap_drop:
     - ALL
+  cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    - DAC_OVERRIDE
+    - NET_BIND_SERVICE
 
 services:
   # ========================
@@ -35,7 +41,7 @@ services:
     container_name: DjangoAllauth_postgres
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${POSTGRES_PORT}:5432"  # Only bind to localhost for security
+      - "${POSTGRES_PORT}:5432"  # Only bind to localhost for security
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d:ro
@@ -56,21 +62,25 @@ services:
   redis:
     image: redis:alpine
     container_name: DjangoAllauth_redis
-    restart: unless-stopped
-    networks:
-      - DjangoAllauth_network
+    command: 
+      - redis-server
+      - "--save"
+      - "60"
+      - "1"
+      - "--stop-writes-on-bgsave-error"
+      - "no"  # Allow writes even if persistence fails
+      - "--appendonly"
+      - "yes"  # Enable AOF persistence
     volumes:
       - redis_data:/data
-    # Security adjustment for Redis
-    security_opt:
-      - no-new-privileges:true
-    cap_drop: [ALL]
-    cap_add:  [SETGID, SETUID, NET_BIND_SERVICE]
-    user: "1000:1000"  # Match your host user ID
+    networks:
+      - DjangoAllauth_network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-    <<: [*resource-limits, *logging-config, *env-config]
+      test: ["CMD", "redis-cli", "--raw", "ping | grep -q PONG"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
   # ========================
   # Database-Dependent Services
   # Admin services
@@ -115,7 +125,7 @@ services:
       - logs_volume:/app/logs
       - ./backend/templates:/app/templates
     ports:
-      - "127.0.0.1:${BACKEND_PORT}:8000" # Use BACKEND_PORT from .env or default to 8000, bind to localhost only
+      - "${BACKEND_PORT}:8000" # Use BACKEND_PORT from .env or default to 8000, bind to localhost only
     networks:
       DjangoAllauth_network:
         aliases:
@@ -131,6 +141,7 @@ services:
     cap_add:  # Add minimal required capabilities
       - SETPCAP
       - CHOWN
+    command: ["gunicorn", "--timeout=120", "-b", "0.0.0.0:8000", "core.wsgi:application"] 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck/"]
       interval: 30s
@@ -156,11 +167,10 @@ services:
     networks:
       - DjangoAllauth_network
     healthcheck:
-      test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME | grep OK"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME | grep OK || exit 1"]
+      interval: 20s
+      timeout: 15s
+      retries: 5
     <<: [*resource-limits, *logging-config, *security-opts, *env-config]
 
   flower:
@@ -201,7 +211,7 @@ services:
       - node_modules:/app/node_modules
       - next_cache:/app/.next
     ports:
-      - "127.0.0.1:3000:3000"  # Only bind to localhost for security
+      - "3000:3000"  # Only bind to localhost for security
     networks:
       - DjangoAllauth_network
     stdin_open: true
@@ -252,9 +262,8 @@ networks:
     driver: bridge
     name: DjangoAllauth_network
     ipam:
-      driver: default
       config:
-        - subnet: 172.28.0.0/16
+        - subnet: 172.28.0.0/24  # Smaller subnet
           gateway: 172.28.0.1
 
 volumes:

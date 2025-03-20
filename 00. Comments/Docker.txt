@@ -2,25 +2,40 @@ docker-compose up --build -d
 docker-compose up -d
 
 -----------------------------------------------------------------------------------------------------------------------------------
-docker-compose build --no-cache postgres
+docker-compose build postgres
 docker-compose up -d --no-deps postgres
+
+docker-compose exec postgres ls -l /proc/self/fd
 -----------------------------------------------------------------------------------------------------------------------------------
 docker-compose up -d --no-deps redis
+
+chown -R 1000:1000 redis_data
+chmod -R 770 redis_data
+
+docker-compose exec redis ls -la /data
 -----------------------------------------------------------------------------------------------------------------------------------
 docker-compose up -d --no-deps pgadmin
 -----------------------------------------------------------------------------------------------------------------------------------
-docker-compose build --no-cache celery-worker
-docker-compose up -d --no-deps celery-worker
------------------------------------------------------------------------------------------------------------------------------------
-docker-compose build --no-cache flower
-docker-compose up -d --no-deps flower
------------------------------------------------------------------------------------------------------------------------------------
-docker-compose build --no-cache backend
+docker-compose build backend
 docker-compose up -d --no-deps backend
 
 docker-compose exec backend python manage.py makemigrations
 docker-compose exec backend python manage.py migrate
+docker exec DjangoAllauth_backend python manage.py shell -c \
+"from django.contrib.sites.models import Site; Site.objects.create(domain='localhost', name='localhost')"
+
+docker exec -it DjangoAllauth_backend bash
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(is_superuser=True).values('username', 'email', 'password'))"
+
+python manage.py changepassword admin
+
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); user = User.objects.get(username='admin'); user.set_password('admin'); user.save()"
 -----------------------------------------------------------------------------------------------------------------------------------
+docker-compose build celery-worker
+docker-compose up -d --no-deps celery-worker
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose build flower
+docker-compose up -d --no-deps flower
 docker-compose build --no-cache frontend
 docker-compose up -d --no-deps frontend
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -33,7 +48,7 @@ docker-compose down -v
 
 docker logs DjangoAllauth_postgres
 docker-compose exec backend env
-docker-compose exec postgres printenv POSTGRES_HOST
+docker-compose exec backend printenv DJANGO_SUPERUSER_USERNAME
 
 docker-compose logs -f
 ===================================================================================================================================
@@ -83,3 +98,7 @@ docker exec -it DjangoAllauth_nginx ls -ld /var/cache/nginx
 
 docker exec -it DjangoAllauth_nginx ps aux
 # Nginx master and worker processes should show running as nginxuser
+
+
+===================================================================================================================================
+curl -v http://localhost:8000/healthcheck/

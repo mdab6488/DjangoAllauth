@@ -1,10 +1,10 @@
 docker-compose.yml                      : 
 DjangoAllauth_postgres                  : PostgreSQL init process complete; ready for start up.
 DjangoAllauth_redis                     : * Ready to accept connections tcp
-DjangoAllauth_pgadmin                   : ok
-DjangoAllauth_nginx                     : ok
-DjangoAllauth_backend                   :
+DjangoAllauth_pgadmin                   : http://localhost:5050/ ok
+DjangoAllauth_backend                   : http://localhost:8000/ ok
 DjangoAllauth_celery-worker             :
+DjangoAllauth_nginx                     : 
 DjangoAllauth_flower                    :
 DjangoAllauth_frontend                  :
 

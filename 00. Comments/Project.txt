@@ -135,3 +135,12 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@domain.com'
 EMAIL_HOST_PASSWORD = 'your-email-password'
+
+
+
+# Absolute path (best for production)
+/path/to/DjangoAllauth/redis_data
+
+# Relative path (for development)
+./redis_data  # Creates directory at project root level
+

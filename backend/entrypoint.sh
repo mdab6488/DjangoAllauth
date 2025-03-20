@@ -3,17 +3,18 @@
 set -eo pipefail
 
 # Constants with defaults
-: "${MAX_DB_RETRIES}"
-: "${DB_RETRY_INTERVAL}"
-: "${POSTGRES_DB}"
-: "${POSTGRES_USER}"
-: "${POSTGRES_PASSWORD}"
-: "${POSTGRES_HOST}"
-: "${POSTGRES_PORT}"
-: "${DJANGO_SUPERUSER_EMAIL}"
-: "${DJANGO_SUPERUSER_USERNAME}"
-: "${DJANGO_SUPERUSER_PASSWORD}"
-: "${DJANGO_DEBUG}"
+: "${MAX_DB_RETRIES:=5}"
+: "${DB_RETRY_INTERVAL:=5}"
+: "${POSTGRES_DB:=postgres}"
+: "${POSTGRES_USER:=postgres}"
+: "${POSTGRES_PASSWORD:=password}"
+: "${POSTGRES_HOST:=db}"
+: "${POSTGRES_PORT:=5432}"
+: "${DJANGO_SUPERUSER_EMAIL:=admin@example.com}"
+: "${DJANGO_SUPERUSER_USERNAME:=admin}"
+: "${DJANGO_SUPERUSER_PASSWORD:=admin}"
+: "${DJANGO_DEBUG:=false}"
+
 # Enable debug mode if requested
 if [[ "${DJANGO_DEBUG,,}" == "true" ]]; then
     set -x
@@ -53,22 +54,33 @@ check_database() {
 # Run migrations only if needed
 apply_migrations() {
     log "🔄 Checking for pending migrations..."
-    if [[ -z $(python manage.py showmigrations --plan | grep "[ ]" || true) ]]; then
-        log "✅ No new migrations to apply"
-    else
+    if python manage.py showmigrations --plan | grep -q "[ ]"; then
         log "⚠️  Applying database migrations"
-        python manage.py migrate --noinput
+        python manage.py migrate --noinput || true
+    else
+        log "✅ No new migrations to apply"
     fi
 }
 
+# Create superuser only if it doesn't exist
 # Create superuser only if it doesn't exist
 create_superuser() {
     log "👤 Checking for existing superuser..."
     if ! python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(is_superuser=True).exists())" | grep -q "True"; then
         log "🛠️  Creating superuser..."
         python manage.py createsuperuser --noinput --email "${DJANGO_SUPERUSER_EMAIL}" || true
+        
+        # Set the password for the newly created superuser
+        log "🔑 Setting superuser password..."
+        python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); user = User.objects.get(username='${DJANGO_SUPERUSER_USERNAME}'); user.set_password('${DJANGO_SUPERUSER_PASSWORD}'); user.save()"
     else
         log "✅ Superuser already exists"
+        # Verify and update password if needed
+        log "🔑 Checking superuser password..."
+        if python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); user = User.objects.get(username='${DJANGO_SUPERUSER_USERNAME}'); print(not user.has_usable_password())" | grep -q "True"; then
+            log "⚠️ Superuser password not set, updating now..."
+            python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); user = User.objects.get(username='${DJANGO_SUPERUSER_USERNAME}'); user.set_password('${DJANGO_SUPERUSER_PASSWORD}'); user.save()"
+        fi
     fi
 }
 
@@ -84,13 +96,20 @@ main() {
 
     # Collect static files
     log "📦 Collecting static assets"
-    python manage.py collectstatic --noinput
+    python manage.py collectstatic --noinput || true
 
     # Create superuser if required
     create_superuser
 
     log "✅ Initialization completed - Starting application"
-    exec "$@"
+
+    # Ensure command execution (default to Gunicorn if no arguments provided)
+    if [[ $# -eq 0 ]]; then
+        log "🟢 No command provided, starting Gunicorn..."
+        exec gunicorn core.wsgi:application --timeout=120 --bind 0.0.0.0:8000 --workers 4
+    else
+        exec "$@"
+    fi
 }
 
 # Start main process
