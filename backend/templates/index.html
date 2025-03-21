@@ -3,159 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureAuth API</title>
+    <title>API Documentation</title>
     <style>
         :root {
-            --primary: #2563eb;
-            --secondary: #4f46e5;
-            --surface: rgba(255, 255, 255, 0.95);
-            --background: #f8fafc;
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #f5f7fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            min-height: 100vh;
+        
+        * {
             margin: 0;
-            padding: 2rem;
-            background: var(--background);
-            display: grid;
-            place-items: center;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .glass-panel {
-            background: var(--surface);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 3rem 2.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            max-width: 500px;
-            width: 90%;
+        
+        body {
+            background-color: #f9f9f9;
+            /* Geometric pattern background */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233498db' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            position: relative;
+        }
+        
+        header {
             text-align: center;
-            transition: transform 0.3s ease;
+            margin-bottom: 40px;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--box-shadow);
+            position: relative;
         }
-
-        .glass-panel:hover {
-            transform: translateY(-5px);
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
         }
-
+        
         h1 {
-            color: #1e293b;
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 2.5rem;
-            letter-spacing: -0.5px;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
         }
-
-        .nav-grid {
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+        
+        .description {
+            max-width: 800px;
+            margin: 20px auto 0;
+            color: #666;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-grid {
             display: grid;
-            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
         }
-
-        .service-card {
+        
+        .card {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 4px solid var(--primary-color);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .card p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            padding: 1.2rem 1.5rem;
-            background: white;
-            border-radius: 12px;
-            text-decoration: none;
-            color: #334155;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #e2e8f0;
+            justify-content: center;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s ease;
         }
-
-        .service-card:hover {
-            background: #f8fafc;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
-            transform: translateX(8px);
+        
+        .card:hover .icon {
+            background-color: rgba(52, 152, 219, 0.2);
+            transform: scale(1.1);
         }
-
-        .service-card:active {
-            transform: translateX(4px);
+        
+        .icon svg {
+            width: 30px;
+            height: 30px;
+            fill: var(--primary-color);
         }
-
-        .icon {
-            width: 32px;
-            height: 32px;
-            margin-right: 1rem;
-            flex-shrink: 0;
-        }
-
-        .card-content {
-            text-align: left;
-        }
-
-        .card-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .card-description {
-            color: #64748b;
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
             font-size: 0.9rem;
-            line-height: 1.4;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
-
-        @media (max-width: 480px) {
+        
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                margin-bottom: 20px;
+            }
+            
             body {
-                padding: 1rem;
-            }
-            
-            .glass-panel {
-                padding: 2rem 1.5rem;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
+                padding: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="glass-panel">
-        <h1>SecureAuth API Portal</h1>
-        <div class="nav-grid">
-            <a href="/api/swagger/" class="service-card">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-                <div class="card-content">
-                    <div class="card-title">API Documentation</div>
-                    <div class="card-description">Explore endpoints with Swagger UI</div>
+    <header>
+        <h1>API Documentation</h1>
+        <p class="description">Welcome to our API platform. Use the links below to navigate to different sections of our service.</p>
+    </header>
+    
+    <div class="container">
+        <div class="card-grid">
+            <div class="card">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M12 12c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/>
+                    </svg>
                 </div>
-            </a>
-
-            <a href="/admin/" class="service-card">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
-                <div class="card-content">
-                    <div class="card-title">Admin Dashboard</div>
-                    <div class="card-description">Manage users and permissions</div>
+                <h2>Admin Dashboard</h2>
+                <p>Access the administrative interface for site management</p>
+                <a href="/admin/" class="btn">Admin Login</a>
+            </div>
+            
+            <div class="card">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M18 8h-1V6c0-2.8-2.2-5-5-5S7 3.2 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.7 1.3-3 3-3s3 1.3 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                    </svg>
                 </div>
-            </a>
-
-            <a href="/api/auth/" class="service-card">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                </svg>
-                <div class="card-content">
-                    <div class="card-title">API Endpoints</div>
-                    <div class="card-description">Direct access to authentication services</div>
+                <h2>Authentication</h2>
+                <p>Authentication endpoints for users and services</p>
+                <a href="/api/auth/" class="btn">Auth API</a>
+            </div>
+            
+            <div class="card">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M7 14c-1.7 0-3 1.3-3 3 0 1.7 1.3 3 3 3s3-1.3 3-3c0-1.7-1.3-3-3-3zm0-8c-1.7 0-3 1.3-3 3 0 1.7 1.3 3 3 3s3-1.3 3-3c0-1.7-1.3-3-3-3zm10 6c1.7 0 3-1.3 3-3 0-1.7-1.3-3-3-3s-3 1.3-3 3c0 1.7 1.3 3 3 3zm0 2c-1.7 0-3 1.3-3 3 0 1.7 1.3 3 3 3s3-1.3 3-3c0-1.7-1.3-3-3-3z"/>
+                    </svg>
                 </div>
-            </a>
-
-            <a href="/api/redoc/" class="service-card">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                </svg>
-                <div class="card-content">
-                    <div class="card-title">API Redoc</div>
-                    <div class="card-description">Explore endpoints with Redoc</div>
+                <h2>Swagger UI</h2>
+                <p>Interactive API documentation with Swagger</p>
+                <a href="/api/swagger/" class="btn">View Swagger</a>
+            </div>
+            
+            <div class="card">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7v-7zm4-3h2v10h-2V7zm4 6h2v4h-2v-4z"/>
+                    </svg>
                 </div>
-            </a>
+                <h2>ReDoc</h2>
+                <p>Alternative API documentation with ReDoc</p>
+                <a href="/api/redoc/" class="btn">View ReDoc</a>
+            </div>
+            
+            <div class="card">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                </div>
+                <h2>Health Check</h2>
+                <p>System health and status monitoring endpoint</p>
+                <a href="/healthcheck/" class="btn">Check Status</a>
+            </div>
         </div>
     </div>
+    
+    <footer>
+        <p>&copy; 2025 Your API Service. All rights reserved.</p>
+    </footer>
 </body>
 </html>

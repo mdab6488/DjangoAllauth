@@ -16,7 +16,7 @@ docker-compose exec redis ls -la /data
 -----------------------------------------------------------------------------------------------------------------------------------
 docker-compose up -d --no-deps pgadmin
 -----------------------------------------------------------------------------------------------------------------------------------
-docker-compose build backend
+docker-compose build --no-cache backend
 docker-compose up -d --no-deps backend
 
 docker-compose exec backend python manage.py makemigrations
@@ -34,10 +34,13 @@ python manage.py shell -c "from django.contrib.auth import get_user_model; User 
 docker-compose build celery-worker
 docker-compose up -d --no-deps celery-worker
 -----------------------------------------------------------------------------------------------------------------------------------
-docker-compose build flower
 docker-compose up -d --no-deps flower
-docker-compose build --no-cache frontend
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose build frontend
 docker-compose up -d --no-deps frontend
+-----------------------------------------------------------------------------------------------------------------------------------
+docker-compose build --no-cache certbot
+docker-compose up -d --no-deps certbot
 -----------------------------------------------------------------------------------------------------------------------------------
 docker-compose build --no-cache nginx
 docker-compose up -d --no-deps nginx
@@ -45,10 +48,11 @@ docker-compose up -d --no-deps nginx
 docker-compose down
 docker-compose down -v
 
+--no-cache
 
 docker logs DjangoAllauth_postgres
 docker-compose exec backend env
-docker-compose exec backend printenv DJANGO_SUPERUSER_USERNAME
+docker-compose exec nginx printenv FRONTEND_HOST
 
 docker-compose logs -f
 ===================================================================================================================================

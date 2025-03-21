@@ -44,3 +44,54 @@ server {
   }
 }
 Use a Docker Certbot setup to automate renewal.
+
+
+
+====================================================
+5. Trust the Certificate (Mac & Windows)
+Mac: Import local.crt into Keychain Access and mark it as trusted.
+Windows: Import local.crt into the Trusted Root Certification Authorities store.
+
+Mac (Using Keychain Access)
+Open Keychain Access (Cmd + Space → type Keychain Access).
+In the top-left corner, select "System" from the left sidebar.
+Click on File → Import Items…, then select local.crt from your ./nginx/ssl/ folder.
+After importing, find localhost (or the certificate name).
+Double-click it and expand Trust.
+Set "When using this certificate" to "Always Trust".
+Close the window (it will ask for your password to confirm).
+Restart your browser.
+✅ Now you can access https://localhost without SSL warnings.
+
+Windows (Using Certificate Manager)
+Press Win + R, type mmc, and press Enter.
+Click File → Add/Remove Snap-in.
+Select Certificates and click Add.
+Choose Computer Account → Next → Local Computer → Finish → OK.
+Navigate to Trusted Root Certification Authorities → Certificates.
+Right-click and choose All Tasks → Import.
+Click Next, then Browse and select local.crt from your ./nginx/ssl/ folder.
+Click Next, ensure it's placed in Trusted Root Certification Authorities, then click Finish.
+Restart your browser.
+✅ Now your browser should trust https://localhost without warnings.:
+
+
+
+# Project Name
+
+## Running the Project
+
+1. Install Docker and Docker Compose
+2. Clone this repository
+3. Run `docker-compose up`
+4. Access the application at https://localhost
+
+### First-time Certificate Warning
+
+When you first access the site, your browser will show a warning about the certificate. This is expected because we're using a self-signed certificate for local development.
+
+To proceed:
+- In Chrome/Edge: Click "Advanced" and then "Proceed to localhost (unsafe)"
+- In Firefox: Click "Advanced" > "Accept the Risk and Continue"
+
+This warning only appears because we're using a locally-generated certificate for development purposes.

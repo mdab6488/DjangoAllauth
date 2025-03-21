@@ -176,7 +176,7 @@ services:
   flower:
     image: mher/flower
     container_name: DjangoAllauth_flower
-    command: ["flower", "--broker=redis://redis:6379/0", "--port=5555"]
+    command: ["celery", "flower", "--broker=redis://redis:6379/0", "--port=5555"]
     ports:
       - "5555:5555"
     networks:
@@ -211,7 +211,7 @@ services:
       - node_modules:/app/node_modules
       - next_cache:/app/.next
     ports:
-      - "3000:3000"  # Only bind to localhost for security
+      - "3000:3000"  # Only bind to localhost for securitySERVER_NAME
     networks:
       - DjangoAllauth_network
     stdin_open: true
@@ -227,6 +227,19 @@ services:
         condition: service_healthy
     <<: [*resource-limits, *logging-config, *security-opts, *env-config]
 
+  certbot:
+    build:
+      context: .  # Use project root as build context
+      dockerfile: certbot/Dockerfile  # Point to Dockerfile location
+    container_name: DjangoAllauth_certbot
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:rw
+    entrypoint: /usr/local/bin/generate-certs.sh
+    # entrypoint: /bin/sh -c "ls -la /usr/local/bin/ && cat /usr/local/bin/generate-certs.sh && /usr/local/bin/generate-certs.sh"
+    networks:
+      - DjangoAllauth_network
+    <<: [*logging-config]
+
   # Web server
   nginx:
     build:
@@ -234,16 +247,23 @@ services:
       dockerfile: Dockerfile
     container_name: DjangoAllauth_nginx
     restart: unless-stopped
+    environment:
+      - SERVER_NAME=${SERVER_NAME:-localhost}  # Default to "localhost"
+      - BACKEND_HOST=${BACKEND_HOST:-backend}   # Default to "backend"
+      - BACKEND_PORT=${BACKEND_PORT:-8000}
+      - FRONTEND_HOST=${FRONTEND_HOST:-frontend}
+      - FRONTEND_PORT=${FRONTEND_PORT:-3000}
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - static_volume:/app/static:ro
       - media_volume:/app/media:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:rw
       - ./nginx/ssl:/etc/nginx/ssl:rw
     user: "102:102"
     depends_on:
+      certbot:
+        condition: service_completed_successfully
       backend:
         condition: service_healthy
       frontend:
@@ -251,11 +271,11 @@ services:
     networks:
       - DjangoAllauth_network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost/healthcheck/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider --no-check-certificate https://localhost/healthcheck/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-    <<: [*resource-limits, *logging-config, *security-opts, *env-config]
+    <<: [*resource-limits, *logging-config, *security-opts]
 
 networks:
   DjangoAllauth_network:

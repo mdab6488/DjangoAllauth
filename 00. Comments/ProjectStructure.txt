@@ -116,7 +116,7 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │
 ├── nginx/                            # Nginx setup for serving frontend and proxying backend
 │   ├── conf.d/                       # Directory for Nginx configuration files
-│   │   ├── default.conf              # Default server block for routing traffic
+│   │   ├── default.template              # Default server block for routing traffic
 │   ├── logs/                         # 
 │   │   ├── access.log                # 
 │   │   ├── error.log                 # 
@@ -126,6 +126,7 @@ DjangoAllauth/                         # Root directory for the full-stack proje
 │   │   ├── nginx-selfsigned.key      # 
 │   ├── Dockerfile                    # 
 │   ├── entrypoint.sh
+│   ├── nginx.conf
 │
 ├── postgres/                            
 │   ├── initdb.d/                       

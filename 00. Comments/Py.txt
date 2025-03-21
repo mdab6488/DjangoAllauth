@@ -82,6 +82,11 @@ source .env
 set +a
 echo $POSTGRES_DB  # Now returns "djangoallauth_db"
 
+echo $FRONTEND_HOST
+echo $FRONTEND_PORT
+echo $BACKEND_HOST
+echo $BACKEND_PORT
+echo $SERVER_NAME
 
 export -n POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD POSTGRES_HOST POSTGRES_PORT
 
