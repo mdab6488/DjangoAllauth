@@ -6,7 +6,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
 from django.http import JsonResponse
-from .views import api_root
+from .views import home_page
 
 # Swagger API Schema
 schema_view = get_schema_view(
@@ -27,11 +27,11 @@ def healthcheck(request):
     return JsonResponse({"status": "ok"})
 
 urlpatterns = [
-    path('api/', api_root, name='api-root'),  # Add this line for the root URL
+    path('', home_page, name='home'),  # Add this line for the root URL
     path('admin/', admin.site.urls),
-    # path('api/auth/', include('AuthenticationApp.urls')),
-    path('api/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('auth/', include('AuthenticationApp.urls')),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path("healthcheck/", healthcheck, name='healthcheck')
 ]
 

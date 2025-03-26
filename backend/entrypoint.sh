@@ -54,11 +54,12 @@ check_database() {
 # Run migrations only if needed
 apply_migrations() {
     log "🔄 Checking for pending migrations..."
-    if python manage.py showmigrations --plan | grep -q "[ ]"; then
-        log "⚠️  Applying database migrations"
-        python manage.py migrate --noinput || true
-    else
+    if python manage.py migrate --check > /dev/null 2>&1; then
         log "✅ No new migrations to apply"
+    else
+        log "⏳ Applying migrations..."
+        python manage.py migrate --noinput
+        log "✅ Migrations applied"
     fi
 }
 

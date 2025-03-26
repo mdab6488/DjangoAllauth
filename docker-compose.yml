@@ -46,7 +46,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d:ro
     networks:
-      DjangoAllauth_network:
+      nginx_network:
         aliases:
           - database
           - postgres
@@ -74,7 +74,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - DjangoAllauth_network
+      - nginx_network
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "ping | grep -q PONG"]
       interval: 15s
@@ -91,7 +91,7 @@ services:
     ports:
       - "5050:80"
     networks:
-      - DjangoAllauth_network
+      - nginx_network
     depends_on:
       postgres:
         condition: service_healthy
@@ -127,7 +127,7 @@ services:
     ports:
       - "${BACKEND_PORT}:8000" # Use BACKEND_PORT from .env or default to 8000, bind to localhost only
     networks:
-      DjangoAllauth_network:
+      nginx_network:
         aliases:
           - backend
     depends_on:
@@ -165,7 +165,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - DjangoAllauth_network
+      - nginx_network
     healthcheck:
       test: ["CMD-SHELL", "celery -A core inspect ping -d celery@$$HOSTNAME | grep OK || exit 1"]
       interval: 20s
@@ -180,7 +180,7 @@ services:
     ports:
       - "5555:5555"
     networks:
-      - DjangoAllauth_network
+      - nginx_network
     depends_on:
       redis:
         condition: service_healthy
@@ -213,7 +213,7 @@ services:
     ports:
       - "3000:3000"  # Only bind to localhost for securitySERVER_NAME
     networks:
-      - DjangoAllauth_network
+      - nginx_network
     stdin_open: true
     tty: true
     healthcheck:
@@ -227,60 +227,10 @@ services:
         condition: service_healthy
     <<: [*resource-limits, *logging-config, *security-opts, *env-config]
 
-  certbot:
-    build:
-      context: .  # Use project root as build context
-      dockerfile: certbot/Dockerfile  # Point to Dockerfile location
-    container_name: DjangoAllauth_certbot
-    volumes:
-      - ./nginx/ssl:/etc/nginx/ssl:rw
-    entrypoint: /usr/local/bin/generate-certs.sh
-    # entrypoint: /bin/sh -c "ls -la /usr/local/bin/ && cat /usr/local/bin/generate-certs.sh && /usr/local/bin/generate-certs.sh"
-    networks:
-      - DjangoAllauth_network
-    <<: [*logging-config]
-
-  # Web server
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: DjangoAllauth_nginx
-    restart: unless-stopped
-    environment:
-      - SERVER_NAME=${SERVER_NAME:-localhost}  # Default to "localhost"
-      - BACKEND_HOST=${BACKEND_HOST:-backend}   # Default to "backend"
-      - BACKEND_PORT=${BACKEND_PORT:-8000}
-      - FRONTEND_HOST=${FRONTEND_HOST:-frontend}
-      - FRONTEND_PORT=${FRONTEND_PORT:-3000}
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - static_volume:/app/static:ro
-      - media_volume:/app/media:ro
-      - ./nginx/ssl:/etc/nginx/ssl:rw
-    user: "102:102"
-    depends_on:
-      certbot:
-        condition: service_completed_successfully
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy
-    networks:
-      - DjangoAllauth_network
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider --no-check-certificate https://localhost/healthcheck/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    <<: [*resource-limits, *logging-config, *security-opts]
-
 networks:
-  DjangoAllauth_network:
+  nginx_network:
     driver: bridge
-    name: DjangoAllauth_network
+    external: true
     ipam:
       config:
         - subnet: 172.28.0.0/24  # Smaller subnet

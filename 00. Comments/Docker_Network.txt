@@ -1,0 +1,4 @@
+docker network create nginx_network
+37e7e211a15a722e4beb96c0d0374b0b350964ac55486c6df1ee8014ede58010
+
+docker network ls
