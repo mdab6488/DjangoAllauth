@@ -1,13 +1,24 @@
-// src/components/ui/ThemeProvider.tsx
 'use client';
 
-import React from 'react';
-import { ThemeProvider } from 'styled-components';
+import { ThemeProvider as StyledThemeProvider } from 'styled-components';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { useTheme } from '@/styles/theme';
+import React from 'react';
 
-const MUIThemeProvider = ({ children }: { children: React.ReactNode }) => {
+interface ThemeProviderProps {
+  children: React.ReactNode;
+}
+
+const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const theme = useTheme();
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+  
+  return (
+    <MuiThemeProvider theme={theme}>
+      <StyledThemeProvider theme={theme}>
+        {children}
+      </StyledThemeProvider>
+    </MuiThemeProvider>
+  );
 };
 
-export default MUIThemeProvider;
+export default ThemeProvider;

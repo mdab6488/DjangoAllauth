@@ -1,10 +1,9 @@
-// frontend/src/components/auth/SignupForm.tsx
 "use client";
-import React from 'react';
 
-import { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Box,
   Button,
@@ -12,148 +11,203 @@ import {
   Typography,
   Container,
   Alert,
-  Grid,
+  Paper,
   Link,
+  CircularProgress
 } from '@mui/material';
-import { register as registerUser } from '../../services/auth';
+import { AxiosError } from 'axios';
 
 interface SignupFormInputs {
   email: string;
-  password1: string;
-  password2: string;
+  password: string;
+  confirmPassword: string;
   firstName: string;
   lastName: string;
 }
 
+interface PasswordValidationRules {
+  required: string;
+  minLength: {
+    value: number;
+    message: string;
+  };
+  validate: {
+    hasUpper: (value: string) => true | string;
+    hasNumber: (value: string) => true | string;
+    hasSpecial: (value: string) => true | string;
+  };
+}
+
+const passwordValidation: PasswordValidationRules = {
+  required: 'Password is required',
+  minLength: {
+    value: 8,
+    message: 'Password must be at least 8 characters',
+  },
+  validate: {
+    hasUpper: value => /[A-Z]/.test(value) || 'Must contain at least one uppercase letter',
+    hasNumber: value => /\d/.test(value) || 'Must contain at least one number',
+    hasSpecial: value => /[!@#$%^&*]/.test(value) || 'Must contain at least one special character',
+  }
+};
+
 const SignupForm = () => {
   const router = useRouter();
-  const [error, setError] = useState('');
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<SignupFormInputs>();
-  const password = watch('password1');
+  const { signup } = useAuth();
+  const [error, setError] = React.useState<string>('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<SignupFormInputs>({
+    mode: 'onBlur',
+  });
+
+  const password = watch('password');
 
   const onSubmit = async (data: SignupFormInputs) => {
+    setIsLoading(true);
+    setError('');
+    
     try {
-      const response = await registerUser(data.email, data.password1, data.password2);
-      localStorage.setItem('token', response.access);
-      router.push('/');
-    } catch (err: unknown) {
-      if (err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message) {
-        const errorMessage = (err as unknown as { response: { data: { message: string } } }).response.data.message;
-        setError(errorMessage);
-      } else {
-        setError('Registration failed');
-      }
+      await signup(data);
+      router.push('/dashboard');
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      setError(error.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <Container component="main" maxWidth="xs">
-      <Box
+      <Paper
+        elevation={3}
         sx={{
-          marginTop: 8,
+          mt: 8,
+          p: 4,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          gap: 2,
         }}
       >
-        <Typography component="h1" variant="h5">
-          Sign up
+        <Typography component="h1" variant="h5" sx={{ fontWeight: 600 }}>
+          Create Account
         </Typography>
-        {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 3 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                autoComplete="given-name"
-                required
-                fullWidth
-                label="First Name"
-                {...register('firstName', {
-                  required: 'First name is required',
-                })}
-                error={!!errors.firstName}
-                helperText={errors.firstName?.message}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Last Name"
-                autoComplete="family-name"
-                {...register('lastName', {
-                  required: 'Last name is required',
-                })}
-                error={!!errors.lastName}
-                helperText={errors.lastName?.message}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="Email Address"
-                autoComplete="email"
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address',
-                  },
-                })}
-                error={!!errors.email}
-                helperText={errors.email?.message}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="Password"
-                type="password"
-                {...register('password1', {
-                  required: 'Password is required',
-                  minLength: {
-                    value: 8,
-                    message: 'Password must be at least 8 characters',
-                  },
-                })}
-                error={!!errors.password1}
-                helperText={errors.password1?.message}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                {...register('password2', {
-                  required: 'Please confirm your password',
-                  validate: value => value === password || 'Passwords do not match',
-                })}
-                error={!!errors.password2}
-                helperText={errors.password2?.message}
-              />
-            </Grid>
-          </Grid>
+
+        {error && (
+          <Alert severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        )}
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ width: '100%', mt: 2 }}
+        >
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="First Name"
+            autoComplete="given-name"
+            error={!!errors.firstName}
+            helperText={errors.firstName?.message}
+            disabled={isLoading}
+            {...register('firstName', {
+              required: 'First name is required',
+              minLength: {
+                value: 2,
+                message: 'Must be at least 2 characters',
+              },
+            })}
+          />
+
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Last Name"
+            autoComplete="family-name"
+            error={!!errors.lastName}
+            helperText={errors.lastName?.message}
+            disabled={isLoading}
+            {...register('lastName', {
+              required: 'Last name is required',
+              minLength: {
+                value: 2,
+                message: 'Must be at least 2 characters',
+              },
+            })}
+          />
+
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Email Address"
+            autoComplete="email"
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            disabled={isLoading}
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Invalid email address',
+              },
+            })}
+          />
+
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Password"
+            type="password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            disabled={isLoading}
+            {...register('password', passwordValidation)}
+          />
+
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Confirm Password"
+            type="password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            disabled={isLoading}
+            {...register('confirmPassword', {
+              validate: value => value === password || 'Passwords do not match',
+            })}
+          />
+
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            size="large"
+            sx={{ mt: 3, height: 48 }}
+            disabled={isLoading}
           >
-            Sign Up
+            {isLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              'Create Account'
+            )}
           </Button>
-          <Grid container justifyContent="flex-end">
-            <Grid item>
-              <Link href="/login" variant="body2">
-                Already have an account? Sign in
-              </Link>
-            </Grid>
-          </Grid>
+
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Link href="/login" variant="body2">
+              Already have an account? Sign in
+            </Link>
+          </Box>
         </Box>
-      </Box>
+      </Paper>
     </Container>
   );
 };

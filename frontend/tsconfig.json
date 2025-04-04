@@ -24,6 +24,7 @@
     "isolatedModules": true,
     "incremental": true,
     "importHelpers": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
 
     // Type Checking
     "strict": true,
@@ -50,6 +51,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "noErrorTruncation": true, // Better error visibility
 
     // Projects
     "plugins": [

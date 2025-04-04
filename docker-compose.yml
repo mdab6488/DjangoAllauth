@@ -208,7 +208,7 @@ services:
     restart: unless-stopped
     volumes:
       - ${DEVELOPMENT_MODE:+./frontend:/app}  # Only mount in development mode
-      - node_modules:/app/node_modules
+      # - node_modules:/app/node_modules
       - next_cache:/app/.next
     ports:
       - "3000:3000"  # Only bind to localhost for securitySERVER_NAME

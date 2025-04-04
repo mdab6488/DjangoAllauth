@@ -1,42 +1,52 @@
-'use client'; // At the top of your file if this is a Client Component
+'use client';
 
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-
+import { useAuth } from '@/hooks/useAuth'; // Assuming you have an auth hook
 
 const Header = () => {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    router.push('/login');
-  };
+  const { isAuthenticated, logout } = useAuth(); // Use auth context/hook
 
   return (
-    <AppBar position="static">
+    <AppBar position="sticky" elevation={1}>
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          component="h1"
+          sx={{ flexGrow: 1, fontWeight: 700 }}
+        >
           Your App Name
         </Typography>
-        <Box>
+        
+        <Box sx={{ display: 'flex', gap: 2 }}>
           {isAuthenticated ? (
-            <Button color="inherit" onClick={handleLogout}>
+            <Button
+              color="inherit"
+              onClick={logout}
+              sx={{ fontWeight: 600 }}
+            >
               Logout
             </Button>
           ) : (
             <>
-              <Button color="inherit" onClick={() => router.push('/login')}>
+              <Button
+                color="inherit"
+                onClick={() => router.push('/login')}
+                sx={{ fontWeight: 600 }}
+              >
                 Login
               </Button>
-              <Button color="inherit" onClick={() => router.push('/signup')}>
+              <Button
+                variant="outlined"
+                color="inherit"
+                onClick={() => router.push('/signup')}
+                sx={{ fontWeight: 600 }}
+              >
                 Sign Up
               </Button>
             </>

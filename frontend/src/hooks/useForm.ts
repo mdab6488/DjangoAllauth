@@ -16,72 +16,88 @@ export function useForm<T extends Record<string, unknown>>({
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setValues((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-    
-    // If field has been touched and we have a validation function, validate this field
-    if (touched[name as keyof T] && validate) {
-      const fieldErrors = validate({
-        ...values,
-        [name]: type === 'checkbox' ? checked : value,
-      });
-      setErrors(prev => ({
-        ...prev,
-        [name]: fieldErrors[name as keyof T]
-      }));
-    }
-  }, [values, touched, validate]);
+  // Handle input changes
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const { name, value, type, checked } = e.target;
+      const fieldValue = type === 'checkbox' ? checked : value;
 
-  const handleBlur = useCallback((e: { target: { name: string } }) => {
-    const { name } = e.target;
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    
-    // Validate field on blur
-    if (validate) {
-      const fieldErrors = validate(values);
-      setErrors(prev => ({
+      // Update values
+      setValues((prev) => ({
         ...prev,
-        [name]: fieldErrors[name as keyof T]
+        [name]: fieldValue,
       }));
-    }
-  }, [values, validate]);
 
-  const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    // Mark all fields as touched
-    const allTouched = Object.keys(values).reduce((acc, key) => {
-      acc[key as keyof T] = true;
-      return acc;
-    }, {} as Partial<Record<keyof T, boolean>>);
-    setTouched(allTouched);
-    
-    // Validate all fields
-    if (validate) {
-      const validationErrors = validate(values);
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
+      // Validate the field if already touched
+      if (touched[name as keyof T] && validate) {
+        const fieldErrors = validate({ ...values, [name]: fieldValue });
+        setErrors((prev) => ({
+          ...prev,
+          [name]: fieldErrors[name as keyof T],
+        }));
       }
-    }
+    },
+    [values, touched, validate]
+  );
 
-    setIsSubmitting(true);
-    try {
-      await onSubmit(values);
-    } catch (error) {
-      console.error('Form submission error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [values, onSubmit, validate]);
+  // Handle input blur
+  const handleBlur = useCallback(
+    (e: { target: { name: string } }) => {
+      const { name } = e.target;
 
+      // Mark field as touched
+      setTouched((prev) => ({
+        ...prev,
+        [name]: true,
+      }));
+
+      // Validate the field
+      if (validate) {
+        const fieldErrors = validate(values);
+        setErrors((prev) => ({
+          ...prev,
+          [name]: fieldErrors[name as keyof T],
+        }));
+      }
+    },
+    [values, validate]
+  );
+
+  // Handle form submission
+  const handleSubmit = useCallback(
+    async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+
+      // Mark all fields as touched
+      const allTouched = Object.keys(values).reduce(
+        (acc, key) => ({ ...acc, [key]: true }),
+        {} as Partial<Record<keyof T, boolean>>
+      );
+      setTouched(allTouched);
+
+      // Validate all fields
+      if (validate) {
+        const validationErrors = validate(values);
+        if (Object.keys(validationErrors).length > 0) {
+          setErrors(validationErrors);
+          return;
+        }
+      }
+
+      // Submit the form
+      setIsSubmitting(true);
+      try {
+        await onSubmit(values);
+      } catch (error) {
+        console.error('Form submission error:', error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [values, onSubmit, validate]
+  );
+
+  // Reset the form to its initial state
   const reset = useCallback(() => {
     setValues(initialValues);
     setErrors({});
@@ -99,6 +115,7 @@ export function useForm<T extends Record<string, unknown>>({
     handleSubmit,
     setValues,
     setErrors,
+    setTouched,
     reset,
   };
 }

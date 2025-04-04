@@ -1,7 +1,7 @@
 // src/app/error.tsx
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -14,11 +14,6 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Application error:', error);
-  }, [error]);
-
   return (
     <Box
       display="flex"
@@ -27,44 +22,19 @@ export default function Error({
       minHeight="100vh"
       padding={3}
     >
-      <Paper
-        elevation={3}
-        sx={{
-          p: 4,
-          maxWidth: 500,
-          borderLeft: '6px solid #f44336'
-        }}
-      >
-        <Typography variant="h5" component="h2" gutterBottom color="error">
-          Something went wrong
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 500 }}>
+        <Typography variant="h6" color="error" gutterBottom>
+          Page Error
         </Typography>
-        
-        <Typography variant="body1" paragraph>
-          We're sorry, but we encountered an unexpected issue. Our team has been notified.
+        <Typography variant="body2" paragraph>
+          {error.message}
         </Typography>
-        
-        <Box
-          sx={{
-            p: 2,
-            my: 2,
-            bgcolor: '#f5f5f5',
-            borderRadius: 1,
-            overflow: 'auto',
-            maxHeight: '150px',
-          }}
-        >
-          <Typography variant="body2" component="code" sx={{ fontFamily: 'monospace' }}>
-            {error.message}
-          </Typography>
-        </Box>
-        
         <Button 
-          variant="contained" 
-          color="primary" 
+          variant="outlined" 
           onClick={reset}
           sx={{ mt: 2 }}
         >
-          Try Again
+          Retry
         </Button>
       </Paper>
     </Box>

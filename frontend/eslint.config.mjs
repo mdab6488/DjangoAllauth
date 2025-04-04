@@ -13,7 +13,7 @@ export default [
   // Extend legacy configs using FlatCompat
   ...compat.extends(
     "next/core-web-vitals",
-    "plugin:@typescript-eslint/recommended", // Add TypeScript recommended rules
+    "plugin:@typescript-eslint/recommended-type-checked", // Use type-checked rules
     "plugin:jest/recommended",
     "plugin:prettier/recommended"
   ),
@@ -35,6 +35,7 @@ export default [
           allowTypedFunctionExpressions: true,
         },
       ],
+      "import/no-extraneous-dependencies": ["error", { "packageDir": "./" }],
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/no-explicit-any": "error",
       "import/order": [

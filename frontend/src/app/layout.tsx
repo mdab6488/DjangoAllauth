@@ -1,12 +1,11 @@
+// src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import ServerLayout from './ServerLayout';
+import ClientLayout from './ClientLayout';
 
 export const metadata: Metadata = {
-  title: 'My Page',
-  description: 'Description of my page',
-  icons: {
-    icon: '/favicon.ico', // Add your favicon
-  }
+  title: 'My App',
+  description: 'Next.js application with MUI',
+  icons: { icon: '/favicon.ico' },
 };
 
 export const viewport: Viewport = {
@@ -15,19 +14,15 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export const themeColor = { color: '#000' }; // Next.js will auto-add <meta name="theme-color" content="#000">.
-
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <body>
-        <ServerLayout>
+        <ClientLayout>
           {children}
-        </ServerLayout>
+        </ClientLayout>
       </body>
     </html>
   );

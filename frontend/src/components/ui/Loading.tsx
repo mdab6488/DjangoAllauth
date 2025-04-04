@@ -1,11 +1,23 @@
-import React from 'react';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 
-const Loading: React.FC = () => {
-  return (
-    <div className="flex justify-center items-center h-full">
-      <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-opacity-75"></div>
-    </div>
-  );
-};
+const Loading = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '200px',
+      gap: 2,
+    }}
+  >
+    <CircularProgress color="primary" />
+    <Typography variant="body1" color="text.secondary">
+      Loading...
+    </Typography>
+  </Box>
+);
 
 export default Loading;
